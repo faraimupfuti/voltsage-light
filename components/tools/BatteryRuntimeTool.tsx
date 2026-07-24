@@ -1,0 +1,155 @@
+'use client'
+import { useState, useMemo } from 'react'
+import { Battery, BatteryFull, Clock, Zap } from 'lucide-react'
+import { calculateBatteryRuntime } from '@/lib/calculations'
+
+function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
+  const R = 54, circ = 2 * Math.PI * R
+  const offset = circ * (1 - Math.min(pct, 1))
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative w-36 h-36">
+        <svg width={136} height={136} viewBox="0 0 136 136" className="ring-svg">
+          <circle className="ring-track" cx={68} cy={68} r={R} />
+          <circle className="ring-fill" cx={68} cy={68} r={R}
+            style={{ stroke: color, strokeDasharray: circ, strokeDashoffset: offset }} />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="font-mono font-bold text-2xl leading-none" style={{ color }}>{value}</div>
+          <div className="font-mono text-xs text-ink-faint mt-1">{unit}</div>
+        </div>
+      </div>
+      <div className="text-xs font-mono uppercase tracking-wider text-ink-faint text-center">{label}</div>
+    </div>
+  )
+}
+
+export default function BatteryRuntimeTool() {
+  const [capacity, setCapacity] = useState(5)
+  const [dod,      setDod]      = useState(80)
+  const [eff,      setEff]      = useState(95)
+  const [load,     setLoad]     = useState(1.0)
+
+  const result = useMemo(() => calculateBatteryRuntime(capacity, dod, eff, load), [capacity, dod, eff, load])
+  const runtimePct = result.runtimeHours / 24
+  const usablePct  = result.usableKWh / Math.max(capacity, 0.1)
+
+  const sliders = [
+    { label:'Battery capacity', unit:'kWh', val:capacity, set:setCapacity, min:1, max:100, step:0.5, color:'#f97316' },
+    { label:'Depth of discharge (DoD)', unit:'%', val:dod, set:setDod, min:10, max:100, step:5, color:'#0891b2', hint:'Lithium = 80% · Lead-acid = 50%' },
+    { label:'Battery efficiency', unit:'%', val:eff, set:setEff, min:60, max:100, step:1, color:'#059669', hint:'Lithium = 95% · Lead-acid = 80–85%' },
+    { label:'Connected load', unit:'kW', val:load, set:setLoad, min:0.1, max:30, step:0.1, color:'#f97316', hint:'Everything switched on simultaneously' },
+  ]
+
+  return (
+    <section id="battery" className="py-24 bg-subtle">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-2xl mb-10">
+          <div className="section-eyebrow">Free tool — Battery Runtime</div>
+          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">
+            Battery Runtime<br /><span className="brand-text-orange">Calculator</span>
+          </h2>
+          <p className="text-ink-muted text-base leading-relaxed">
+            How long will your battery actually last? Enter the battery size, depth of discharge,
+            efficiency and the load you plan to run. Get the exact hours of backup — before you buy.
+          </p>
+        </div>
+
+        <div className="card-flat rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
+            {/* LEFT — inputs */}
+            <div className="p-8">
+              <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-6">Battery parameters</h3>
+              <div className="space-y-7">
+                {sliders.map(s => (
+                  <div key={s.label}>
+                    <div className="flex justify-between mb-2">
+                      <div>
+                        <label className="text-sm font-mono text-ink font-medium">{s.label}</label>
+                        {s.hint && <p className="text-[10px] font-mono text-ink-faint mt-0.5">{s.hint}</p>}
+                      </div>
+                      <span className="font-mono font-bold text-base" style={{ color: s.color }}>{s.val} {s.unit}</span>
+                    </div>
+                    <div className="relative">
+                      <input type="range" min={s.min} max={s.max} step={s.step} value={s.val}
+                        onChange={e => s.set(parseFloat(e.target.value))}
+                        className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                        style={{ accentColor: s.color, background: `linear-gradient(to right, ${s.color} ${((s.val - s.min) / (s.max - s.min)) * 100}%, #e2e8f0 ${((s.val - s.min) / (s.max - s.min)) * 100}%)` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Manual inputs */}
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Capacity (kWh)</label>
+                  <input type="number" min={0.5} step={0.5} value={capacity} onChange={e => setCapacity(parseFloat(e.target.value)||0.5)} className="tool-input text-xs" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Load (kW)</label>
+                  <input type="number" min={0.1} step={0.1} value={load} onChange={e => setLoad(parseFloat(e.target.value)||0.1)} className="tool-input text-xs" />
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT — results */}
+            <div className="p-8 flex flex-col items-center justify-center">
+              <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-8 self-start">Results</h3>
+
+              <div className="flex flex-wrap justify-center gap-10 mb-10">
+                <RingGauge pct={runtimePct} color="#f97316" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
+                <RingGauge pct={usablePct}  color="#0891b2" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
+              </div>
+
+              {/* Formula */}
+              <div className="w-full bg-surface-subtle rounded-2xl border border-surface-border p-5 mb-6">
+                <div className="font-mono text-[10px] text-ink-faint uppercase tracking-wider mb-3">How it&apos;s calculated</div>
+                <div className="space-y-2 font-mono text-xs text-ink-muted">
+                  <div className="flex justify-between"><span>Rated capacity</span><span className="text-ink font-semibold">{capacity} kWh</span></div>
+                  <div className="flex justify-between"><span>× DoD ({dod}%)</span><span className="text-ink font-semibold">{(capacity*dod/100).toFixed(2)} kWh</span></div>
+                  <div className="flex justify-between"><span>× efficiency ({eff}%)</span><span className="font-bold" style={{ color:'#0891b2' }}>{result.usableKWh.toFixed(2)} kWh usable</span></div>
+                  <div className="h-px bg-surface-border my-1" />
+                  <div className="flex justify-between"><span>÷ load ({load.toFixed(1)} kW)</span><span className="font-bold" style={{ color:'#f97316' }}>{result.runtimeHours.toFixed(1)} hours</span></div>
+                </div>
+              </div>
+
+              {/* Reference loads */}
+              <div className="w-full bg-surface-subtle rounded-xl p-4 text-xs font-mono text-ink-muted border border-surface-border">
+                <div className="flex items-center gap-2 mb-3 text-ink-faint"><Battery size={14}/><span className="uppercase tracking-wider">Common reference loads</span></div>
+                {[
+                  { label:'Fridge + 6 LED lights + TV', kw:0.65 },
+                  { label:'2 ACs + fridge + lights',    kw:2.8 },
+                  { label:'Borehole pump (1.1 kW)',      kw:1.1 },
+                  { label:'Home office (laptop + lights)',kw:0.2 },
+                ].map(ref=>(
+                  <div key={ref.label} className="flex justify-between items-center py-1.5 border-b border-surface-border last:border-0">
+                    <span>{ref.label}</span>
+                    <span className="text-ink font-semibold">{(result.usableKWh/ref.kw).toFixed(1)} hrs</span>
+                  </div>
+                ))}
+              </div>
+
+              <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> Get a battery design from an engineer</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Info cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+          {[
+            { icon:<Battery size={20}/>, title:'What is DoD?', body:'Depth of Discharge is how far you can run a battery down before damage occurs. A 5 kWh lithium battery at 80% DoD gives you 4 kWh — not 5 kWh.' },
+            { icon:<BatteryFull size={20}/>, title:'What is efficiency?', body:'Not all energy going in comes back out. At 95% efficiency, for every 1 kWh you store, you get 0.95 kWh back. The rest is lost as heat.' },
+            { icon:<Clock size={20}/>, title:'What is runtime?', body:'Runtime is usable energy divided by your connected load. Halve your load, double your runtime — but you have to calculate it first, before you buy.' },
+          ].map((c,i)=>(
+            <div key={i} className="card p-5">
+              <div className="text-brand-teal mb-3">{c.icon}</div>
+              <h4 className="font-disp font-bold text-base uppercase text-ink mb-2">{c.title}</h4>
+              <p className="text-ink-muted text-sm">{c.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
