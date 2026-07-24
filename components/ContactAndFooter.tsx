@@ -19,9 +19,9 @@ export function ContactSection() {
   }
 
   const SERVICES = [
-    { sub:'Energy Advisory Session', name:'Ask an Engineer', desc:'A one-on-one conversation with a VoltSage engineer. We help you understand your energy needs and what size system you actually require — before you commit to buying anything.' },
-    { sub:'Check a quote you already have', name:'Independent Design Review', desc:'Already received a quote from an installer? Send it to us. We check whether the equipment is the right size for your needs and whether the specification makes engineering sense — with nothing to sell you.' },
-    { sub:'Full system design', name:'Engineering Design Package', desc:'A complete, engineer-prepared design for your solar system — sizing verification, single-line diagram, bill of quantities and full specifications. Contact us to discuss your project.' },
+    { sub:'Energy Advisory Session', name:'LEARN HOW TO USE A SIZING TOOL', desc:'A one-on-one conversation with a VoltSage expert. We help you understand your energy needs and what size system you actually require — before you commit to buying anything.' },
+    { sub:'Check a quote you already have', name:'SOLAR QUOTE REVIEW', desc:'Already received a quote from an installer? Send it to us. We check whether the equipment is the right size for your needs and whether the specification makes engineering sense — with nothing to sell you.' },
+    { sub:'General Questions', name:'GENERAL SOLAR QUESTIONS', desc:'A complete, engineer-prepared design for your solar system — sizing verification, single-line diagram, bill of quantities and full specifications. Contact us to discuss your project.' },
   ]
 
   return (
