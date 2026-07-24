@@ -1,17 +1,17 @@
 'use client'
 import { ShieldCheck, Clock, BadgeCheck, Calculator, MapPin, Gift } from 'lucide-react'
 const WHY=[
-  {icon:Calculator,color:'#f97316',title:'You\'ll know exactly what size system you need',body:'Without a sizing tool, you\'re guessing. Our tool builds a real picture of how much electricity you use and when, then tells you the right inverter size, battery capacity and number of solar panels.'},
-  {icon:ShieldCheck,color:'#0891b2',title:'You won\'t overpay for a system that\'s too big',body:'Installers often oversize systems to be "safe" — but you pay for every extra kilowatt. Knowing your actual numbers means you can push back on any quote that recommends more than you need.'},
-  {icon:BadgeCheck,color:'#059669',title:'You won\'t be left with a system that\'s too small',body:'An undersized system trips and shuts down when too many appliances run at once. Our tool calculates your peak demand and surge requirements so the system handles everything simultaneously.'},
-  {icon:Clock,color:'#d97706',title:'You can compare quotes from different installers fairly',body:'When you know you need a 5 kW inverter, 10 kWh battery and 8 kWp of panels — you can compare every quote on the same terms. Without those numbers, you\'re comparing apples to oranges.'},
-  {icon:MapPin,color:'#8b5cf6',title:'Your system is sized for your actual location',body:'Solar performs differently in Bulawayo versus Manicaland, in Egypt versus Ghana. Our tools use real peak sun hour data for your exact province or country — not a generic average.'},
-  {icon:Gift,color:'#ec4899',title:'It\'s completely free — no strings attached',body:'Residential sizing, agricultural sizing, battery runtime — all free, forever. We don\'t sell equipment and we don\'t earn a commission on what you buy.'},
+  {icon:Calculator,color:'#1B17FF',title:'You\'ll know exactly what size system you need',body:'Without a sizing tool, you\'re guessing. Our tool builds a real picture of how much electricity you use and when, then tells you the right inverter size, battery capacity and number of solar panels.'},
+  {icon:ShieldCheck,color:'#0f172a',title:'You won\'t overpay for a system that\'s too big',body:'Installers often oversize systems to be "safe" — but you pay for every extra kilowatt. Knowing your actual numbers means you can push back on any quote that recommends more than you need.'},
+  {icon:BadgeCheck,color:'#1e293b',title:'You won\'t be left with a system that\'s too small',body:'An undersized system trips and shuts down when too many appliances run at once. Our tool calculates your peak demand and surge requirements so the system handles everything simultaneously.'},
+  {icon:Clock,color:'#14109E',title:'You can compare quotes from different installers fairly',body:'When you know you need a 5 kW inverter, 10 kWh battery and 8 kWp of panels — you can compare every quote on the same terms. Without those numbers, you\'re comparing apples to oranges.'},
+  {icon:MapPin,color:'#4640FF',title:'Your system is sized for your actual location',body:'Solar performs differently in Bulawayo versus Manicaland, in Egypt versus Ghana. Our tools use real peak sun hour data for your exact province or country — not a generic average.'},
+  {icon:Gift,color:'#64748b',title:'It\'s completely free — no strings attached',body:'Residential sizing, agricultural sizing, battery runtime — all free, forever. We don\'t sell equipment and we don\'t earn a commission on what you buy.'},
 ]
 const TOOLS=[
-  {name:'Residential & Small Commercial Sizing Tool',who:'For homeowners, offices, shops and small businesses',what:'Add the appliances you want to power and the times they run. The tool builds a 24-hour load profile and tells you the recommended inverter size, battery capacity and PV array.',href:'#sizing',color:'#0891b2',cta:'Size my home or office →'},
-  {name:'Agricultural Solar Sizing Tool',who:'For farmers, irrigation, poultry, dairy and crop processors',what:'Farm equipment like borehole pumps draw 2–3× their rated power on startup. This tool accounts for that and gives you the right system size for your specific farm activity.',href:'#agricultural',color:'#059669',cta:'Size my farm →'},
-  {name:'Battery Runtime Calculator',who:'For anyone who wants to know how long their battery will last',what:'Enter your battery size, discharge depth, efficiency and load. Get the exact hours of backup — before you spend money on a battery.',href:'#battery',color:'#f97316',cta:'Calculate my runtime →'},
+  {name:'Residential & Small Commercial Sizing Tool',who:'For homeowners, offices, shops and small businesses',what:'Add the appliances you want to power and the times they run. The tool builds a 24-hour load profile and tells you the recommended inverter size, battery capacity and PV array.',href:'#sizing',color:'#0f172a',cta:'Size my home or office →'},
+  {name:'Agricultural Solar Sizing Tool',who:'For farmers, irrigation, poultry, dairy and crop processors',what:'Farm equipment like borehole pumps draw 2–3× their rated power on startup. This tool accounts for that and gives you the right system size for your specific farm activity.',href:'#agricultural',color:'#1e293b',cta:'Size my farm →'},
+  {name:'Battery Runtime Calculator',who:'For anyone who wants to know how long their battery will last',what:'Enter your battery size, discharge depth, efficiency and load. Get the exact hours of backup — before you spend money on a battery.',href:'#battery',color:'#1B17FF',cta:'Calculate my runtime →'},
 ]
 export default function WhyTools() {
   return (
@@ -78,7 +78,7 @@ export default function WhyTools() {
                   {t:'Right size = system works reliably, every day, for 15+ years',ok:true},
                 ].map((p,i)=>(
                   <div key={i} className="flex items-start gap-3">
-                    <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 text-[10px] font-bold ${p.ok?'text-white':'text-red-500 bg-red-50 border border-red-200'}`} style={p.ok?{background:'linear-gradient(135deg,#059669,#0891b2)'}:{}}>
+                    <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 text-[10px] font-bold ${p.ok?'text-white':'text-red-500 bg-red-50 border border-red-200'}`} style={p.ok?{background:'linear-gradient(135deg,#1e293b,#0f172a)'}:{}}>
                       {p.ok?'✓':'✕'}
                     </span>
                     <p className={`text-sm font-mono ${p.ok?'text-ink font-semibold':'text-ink-muted'}`}>{p.t}</p>

@@ -1,18 +1,19 @@
 'use client'
 import{useState,useCallback,useEffect,useRef}from'react'
-import{Plus,Trash2,Zap,Clock,X,ChevronDown}from'lucide-react'
+import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2}from'lucide-react'
 import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,PSH_TABLE,findPSH,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
+import{generateSizingReportPDF}from'@/lib/pdfReport'
 const IC:Record<string,string>={'Irrigation':'💧','Dairy Farming':'🐄','Poultry Farming':'🐓','Piggery':'🐷','Greenhouse Farming':'🌱','Crop Processing':'🌾','Mixed Farming':'🚜'}
 let as=0
 function Lbl({c}:{c:React.ReactNode}){return<span className="block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1">{c}</span>}
-function RC({label,value,unit,accent=false,amber=false}:{label:string;value:string;unit:string;accent?:boolean;amber?:boolean}){const col=amber?'#f97316':accent?'#0891b2':'#059669';return<div className="bg-surface-subtle rounded-xl p-4 border border-surface-border"><div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">{label}</div><div className="font-mono font-bold text-2xl leading-none" style={{color:col}}>{value}<span className="text-sm font-normal text-ink-faint ml-1">{unit}</span></div></div>}
+function RC({label,value,unit,accent=false,amber=false}:{label:string;value:string;unit:string;accent?:boolean;amber?:boolean}){const col=amber?'#1B17FF':accent?'#0f172a':'#1e293b';return<div className="bg-surface-subtle rounded-xl p-4 border border-surface-border"><div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">{label}</div><div className="font-mono font-bold text-2xl leading-none" style={{color:col}}>{value}<span className="text-sm font-normal text-ink-faint ml-1">{unit}</span></div></div>}
 function drawH(canvas:HTMLCanvasElement,profile:number[]){
   const ctx=canvas.getContext('2d');if(!ctx)return
   const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H)
   const mW=Math.max(1,...profile),pL=50,pB=34,pT=14,pR=14,plotW=W-pL-pR,plotH=H-pT-pB,bW=plotW/24
   for(let i=0;i<=5;i++){const y=pT+plotH-(i/5)*plotH;ctx.strokeStyle='#e2e8f0';ctx.lineWidth=i===0?1.5:0.8;ctx.setLineDash(i===0?[]:[3,4]);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+plotW,y);ctx.stroke();ctx.setLineDash([]);const v=(i/5)*mW;ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(v>=1000?`${(v/1000).toFixed(1)}`:`${Math.round(v)}`,pL-4,y+3.5)}
   ctx.save();ctx.translate(10,pT+plotH/2);ctx.rotate(-Math.PI/2);ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.fillText('kW',0,0);ctx.restore()
-  for(let h=0;h<24;h++){const avg=((profile[h*2]??0)+(profile[h*2+1]??0))/2,bH=(avg/mW)*plotH,x=pL+h*bW,n=h<6||h>=18;const g=ctx.createLinearGradient(0,pT+plotH-bH,0,pT+plotH);g.addColorStop(0,n?'rgba(249,115,22,0.85)':'rgba(8,145,178,0.85)');g.addColorStop(1,'rgba(0,0,0,0.02)');ctx.fillStyle=g;ctx.fillRect(x+1,pT+plotH-bH,Math.max(1,bW-2),bH)}
+  for(let h=0;h<24;h++){const avg=((profile[h*2]??0)+(profile[h*2+1]??0))/2,bH=(avg/mW)*plotH,x=pL+h*bW,n=h<6||h>=18;const g=ctx.createLinearGradient(0,pT+plotH-bH,0,pT+plotH);g.addColorStop(0,n?'rgba(15,23,42,0.85)':'rgba(27,23,255,0.85)');g.addColorStop(1,'rgba(0,0,0,0.02)');ctx.fillStyle=g;ctx.fillRect(x+1,pT+plotH-bH,Math.max(1,bW-2),bH)}
   ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center'
   for(let h=0;h<24;h+=3)ctx.fillText(`${String(h).padStart(2,'0')}:00`,pL+h*bW+bW/2,pT+plotH+12)
   ctx.fillText('Hour of day',pL+plotW/2,pT+plotH+28)
@@ -26,10 +27,39 @@ export default function AgriculturalTool(){
   const[sel,setSel]=useState(AG_ACTIVITIES['Irrigation'][0].id)
   const[mN,setMN]=useState(''),[mK,setMK]=useState(0),[mF,setMF]=useState('06:00'),[mT,setMT]=useState('18:00')
   const[result,setResult]=useState<SizingResult|null>(null)
+  const[pdfBusy,setPdfBusy]=useState(false)
   const hRef=useRef<HTMLCanvasElement>(null)
   useEffect(()=>{if(!rows.length){setResult(null);return};setResult(calculateAgriculturalSizing(rows,mode,findPSH(psh).psh,1))},[rows,psh,mode])
   useEffect(()=>{if(!hRef.current)return;if(!result){hRef.current.getContext('2d')?.clearRect(0,0,600,180);return};drawH(hRef.current,result.profile)},[result])
   useEffect(()=>{const eq=AG_ACTIVITIES[act];if(eq.length)setSel(eq[0].id);setRows([])},[act])
+  const downloadPDF=useCallback(async()=>{
+    if(!result)return
+    setPdfBusy(true)
+    try{
+      const body=rows.map(r=>{const kw=mode==='advanced'&&r.customKW?r.customKW:r.kw
+        const period=r.periods.map(p=>`${p.from}–${p.to}`).join(', ')
+        return[r.name,String(r.qty),`${kw} kW`,period]
+      })
+      await generateSizingReportPDF({
+        toolName:'Agricultural Solar Sizing Report',
+        subtitle:`Load profile and recommended inverter, battery and PV array sizing for a ${act.toLowerCase()} operation.`,
+        location:findPSH(psh).label,
+        mode,
+        metrics:[
+          {label:'Daily energy',value:result.Ed_kWh.toFixed(2),unit:'kWh/day'},
+          {label:'Maximum running demand',value:result.Peak_kW.toFixed(2),unit:'kW'},
+          {label:'Recommended inverter size',value:String(result.invSize),unit:'kW'},
+          {label:'Recommended surge withstand',value:result.Surge_kW.toFixed(2),unit:'kW'},
+          {label:'Recommended battery',value:result.CbattRounded.toFixed(1),unit:'kWh'},
+          {label:'Recommended PV array',value:result.PpvRounded.toFixed(2),unit:'kWp'},
+        ],
+        highlight:`≈ ${result.panelCount} panels @ 550 Wp  ·  Night ${result.Enight_kWh.toFixed(2)} kWh  ·  Day ${result.Eday_kWh.toFixed(2)} kWh`,
+        chartImage:hRef.current?.toDataURL('image/png')??null,
+        tables:[{title:'Equipment schedule',head:['Equipment','Qty','Power','Operating period'],body}],
+        disclaimer:'Inverter sized at 1.3× peak running demand to nearest standard size. Final system sizing and equipment selection must be verified by a qualified engineer before installation.',
+      })
+    }finally{setPdfBusy(false)}
+  },[result,rows,mode,psh,act])
   const add=useCallback(()=>{const eq=AG_ACTIVITIES[act].find(e=>e.id===sel);if(!eq)return;as++;setRows(p=>[...p,{rowId:as,eqId:eq.id,name:eq.name,kw:eq.kw,surge:eq.surge,qty:1,periods:[{from:'06:00',to:'18:00'}],customKW:null}])},[act,sel])
   const addM=useCallback(()=>{if(mK<=0){alert('Enter kW>0');return};as++;setRows(p=>[...p,{rowId:as,eqId:'__misc__',name:mN||'Misc',kw:mK,surge:1,qty:1,periods:[{from:mF,to:mT}],customKW:null}])},[mK,mN,mF,mT])
   const rm=(id:number)=>setRows(p=>p.filter(r=>r.rowId!==id))
@@ -114,7 +144,7 @@ export default function AgriculturalTool(){
               <div className="bg-surface-subtle rounded-xl p-3 border border-surface-border">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono text-ink-faint uppercase">24-hour load profile</span>
-                  <div className="flex gap-3 text-[9px] font-mono text-ink-faint"><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#0891b2'}}/>Day</span><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#f97316'}}/>Night</span></div>
+                  <div className="flex gap-3 text-[9px] font-mono text-ink-faint"><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#1B17FF'}}/>Day</span><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#0f172a'}}/>Night</span></div>
                 </div>
                 <canvas ref={hRef} width={560} height={180} className="w-full rounded-lg" style={{height:130}}/>
                 {!result&&<div className="text-center text-ink-faint font-mono text-xs py-2">Add equipment to see profile →</div>}
@@ -128,6 +158,7 @@ export default function AgriculturalTool(){
                 <RC label="Recommended PV array" value={result?result.PpvRounded.toFixed(2):'—'} unit="kWp"/>
               </div>
               {result&&<div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-xs font-mono text-green-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
+              <button onClick={downloadPDF} disabled={!result||pdfBusy} className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
               <a href="#contact" className="btn-teal justify-center"><Zap size={13}/> Request a detailed agricultural design</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Inverter sized at 1.3× peak running demand to nearest standard size. Final design must be verified by a qualified engineer before installation.</p>
             </div>

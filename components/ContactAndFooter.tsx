@@ -108,7 +108,7 @@ export function ContactSection() {
                 ].map((item,i)=>(
                   <div key={i} className="flex gap-3">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-[9px] font-bold"
-                      style={{background:'linear-gradient(135deg,#f97316,#059669)'}}>✓</div>
+                      style={{background:'linear-gradient(135deg,#1B17FF,#1e293b)'}}>✓</div>
                     <div>
                       <div className="font-mono text-xs font-bold text-ink uppercase tracking-wider">{item.label}</div>
                       <div className="text-ink-muted text-xs mt-0.5">{item.desc}</div>
@@ -137,12 +137,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           <div className="sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="relative w-9 h-9 flex-shrink-0"><Image src="/logo.png" alt="VoltSage" fill className="object-contain"/></div>
-              <div>
-                <div className="font-disp font-bold text-base tracking-widest uppercase"><span className="text-ink">VOLT</span><span className="brand-text-teal">SAGE</span></div>
-                <div className="text-[9px] font-mono text-ink-faint uppercase tracking-widest">Solutions</div>
-              </div>
+            <div className="flex items-center gap-2.5 mb-4">
+              <Image src="/logo.png" alt="VoltSage" width={170} height={36} className="h-8 w-auto"/>
+              <span className="text-[9px] font-mono text-ink-faint uppercase tracking-widest self-end pb-0.5 border-l border-surface-border pl-2.5">Solutions</span>
             </div>
             <p className="text-ink-faint text-xs leading-relaxed max-w-xs">Use our free tools before you buy a solar system. Know your numbers. Make a confident decision. We sell no equipment — ever.</p>
           </div>

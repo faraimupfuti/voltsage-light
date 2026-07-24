@@ -17,14 +17,11 @@ export default function Header() {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled?'bg-white/95 backdrop-blur-md shadow-sm border-b border-surface-border':'bg-white/80 backdrop-blur-sm'}`}>
-      <div className="h-0.5 w-full" style={{background:'linear-gradient(90deg,#f97316,#d97706,#0891b2,#059669)'}}/>
+      <div className="h-0.5 w-full" style={{background:'linear-gradient(90deg,#1B17FF,#14109E,#0f172a,#1e293b)'}}/>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-3 group">
-          <div className="relative w-9 h-9 flex-shrink-0"><Image src="/logo.png" alt="VoltSage Solutions" fill className="object-contain"/></div>
-          <div className="leading-none">
-            <span className="font-disp font-bold text-lg tracking-widest uppercase"><span className="text-ink">VOLT</span><span className="brand-text-teal">SAGE</span></span>
-            <p className="text-[9px] font-mono tracking-[0.18em] text-ink-faint uppercase">Solutions</p>
-          </div>
+        <a href="#" className="flex items-center gap-2.5 group">
+          <Image src="/logo.png" alt="VoltSage" width={170} height={36} priority className="h-8 w-auto sm:h-9"/>
+          <span className="hidden sm:block text-[9px] font-mono tracking-[0.2em] text-ink-faint uppercase self-end pb-0.5 border-l border-surface-border pl-2.5">Solutions</span>
         </a>
         <nav className="hidden lg:flex items-center gap-5">
           {NAV.map(n=><a key={n.href} href={n.href} className="text-[11px] font-mono uppercase tracking-widest text-ink-muted hover:text-brand-teal transition-colors">{n.label}</a>)}

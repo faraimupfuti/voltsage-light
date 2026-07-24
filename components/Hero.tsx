@@ -2,7 +2,7 @@
 import { Zap, ChevronDown, Sun, Battery, BarChart3 } from 'lucide-react'
 
 const STATS=[{val:'100%',label:'Free to use'},{val:'3',label:'Sizing tools'},{val:'0',label:'Equipment sold'},{val:'5 min',label:'To get your numbers'}]
-const TOOL_PILLS=[{icon:<BarChart3 size={14}/>,label:'Residential Sizing',color:'#f97316',href:'#sizing'},{icon:<Sun size={14}/>,label:'Agricultural Sizing',color:'#059669',href:'#agricultural'},{icon:<Battery size={14}/>,label:'Battery Runtime',color:'#0891b2',href:'#battery'}]
+const TOOL_PILLS=[{icon:<BarChart3 size={14}/>,label:'Residential Sizing',color:'#1B17FF',href:'#sizing'},{icon:<Sun size={14}/>,label:'Agricultural Sizing',color:'#1e293b',href:'#agricultural'},{icon:<Battery size={14}/>,label:'Battery Runtime',color:'#0f172a',href:'#battery'}]
 
 export default function Hero() {
   return (
@@ -48,12 +48,12 @@ export default function Hero() {
                   <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">Sizing result</div>
                   <div className="font-disp font-bold text-lg text-ink uppercase">Harare Residence</div>
                 </div>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:'linear-gradient(135deg,#f97316,#d97706)'}}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:'linear-gradient(135deg,#1B17FF,#14109E)'}}>
                   <Sun size={18} className="text-white"/>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                {[{label:'Daily energy',val:'8.4',unit:'kWh/day',color:'#0891b2'},{label:'Peak demand',val:'2.8',unit:'kW',color:'#f97316'},{label:'Inverter size',val:'5',unit:'kW',color:'#0f172a'},{label:'PV array',val:'4.0',unit:'kWp',color:'#059669'}].map(r=>(
+                {[{label:'Daily energy',val:'8.4',unit:'kWh/day',color:'#14109E'},{label:'Peak demand',val:'2.8',unit:'kW',color:'#1B17FF'},{label:'Inverter size',val:'5',unit:'kW',color:'#0f172a'},{label:'PV array',val:'4.0',unit:'kWp',color:'#1e293b'}].map(r=>(
                   <div key={r.label} className="bg-surface-subtle rounded-xl p-3">
                     <div className="text-[9px] font-mono uppercase tracking-wider text-ink-faint mb-1">{r.label}</div>
                     <div className="font-mono font-bold text-xl leading-none" style={{color:r.color}}>{r.val}<span className="text-xs font-normal text-ink-faint ml-0.5">{r.unit}</span></div>
@@ -64,7 +64,7 @@ export default function Hero() {
                 <div className="text-[9px] font-mono uppercase tracking-wider text-ink-faint mb-2">24-hour load profile</div>
                 <div className="flex items-end gap-0.5 h-10">
                   {[1,1,1,2,2,3,5,7,6,5,5,6,5,4,5,6,7,8,7,6,5,3,2,1].map((v,i)=>(
-                    <div key={i} className="flex-1 rounded-sm" style={{height:`${(v/8)*100}%`,background:(i<6||i>=18)?'#f97316':'#0891b2',opacity:0.75}}/>
+                    <div key={i} className="flex-1 rounded-sm" style={{height:`${(v/8)*100}%`,background:(i<6||i>=18)?'#0f172a':'#1B17FF',opacity:0.75}}/>
                   ))}
                 </div>
                 <div className="flex justify-between mt-1.5 text-[8px] font-mono text-ink-faint">
@@ -74,7 +74,7 @@ export default function Hero() {
               <a href="#sizing" className="mt-4 btn-primary w-full justify-center text-xs"><Zap size={13}/> Try the sizing tool</a>
             </div>
             <div className="absolute -bottom-4 left-4 bg-white rounded-xl shadow-card-md px-4 py-3 border border-surface-border flex items-center gap-3 z-20">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{background:'linear-gradient(135deg,#059669,#0891b2)'}}><Battery size={15} className="text-white"/></div>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{background:'linear-gradient(135deg,#1e293b,#0f172a)'}}><Battery size={15} className="text-white"/></div>
               <div>
                 <div className="text-[9px] font-mono uppercase tracking-wider text-ink-faint">Battery runtime</div>
                 <div className="font-mono font-bold text-sm text-ink">5 kWh → 7.6 hrs</div>

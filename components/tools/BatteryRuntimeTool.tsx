@@ -1,7 +1,8 @@
 'use client'
-import { useState, useMemo } from 'react'
-import { Battery, BatteryFull, Clock, Zap } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { Battery, BatteryFull, Clock, Zap, FileDown, Loader2 } from 'lucide-react'
 import { calculateBatteryRuntime } from '@/lib/calculations'
+import { generateSizingReportPDF } from '@/lib/pdfReport'
 
 function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
   const R = 54, circ = 2 * Math.PI * R
@@ -33,12 +34,41 @@ export default function BatteryRuntimeTool() {
   const result = useMemo(() => calculateBatteryRuntime(capacity, dod, eff, load), [capacity, dod, eff, load])
   const runtimePct = result.runtimeHours / 24
   const usablePct  = result.usableKWh / Math.max(capacity, 0.1)
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const downloadPDF = useCallback(async () => {
+    setPdfBusy(true)
+    try {
+      await generateSizingReportPDF({
+        toolName: 'Battery Runtime Report',
+        subtitle: 'Usable energy and estimated backup runtime for the battery and load parameters entered below.',
+        metrics: [
+          { label: 'Battery capacity (rated)', value: String(capacity), unit: 'kWh' },
+          { label: 'Depth of discharge', value: String(dod), unit: '%' },
+          { label: 'Battery efficiency', value: String(eff), unit: '%' },
+          { label: 'Connected load', value: load.toFixed(1), unit: 'kW' },
+          { label: 'Usable energy', value: result.usableKWh.toFixed(2), unit: 'kWh' },
+          { label: 'Runtime at this load', value: result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1), unit: 'hours' },
+        ],
+        highlight: `${capacity} kWh × ${dod}% DoD × ${eff}% efficiency = ${result.usableKWh.toFixed(2)} kWh usable  ·  ÷ ${load.toFixed(1)} kW load = ${result.runtimeHours.toFixed(1)} hours runtime`,
+        tables: [{
+          title: 'Common reference loads',
+          head: ['Reference load', 'Estimated hours'],
+          body: [
+            ['Fridge + 6 LED lights + TV (0.65 kW)', `${(result.usableKWh / 0.65).toFixed(1)} hrs`],
+            ['2 ACs + fridge + lights (2.8 kW)', `${(result.usableKWh / 2.8).toFixed(1)} hrs`],
+            ['Borehole pump (1.1 kW)', `${(result.usableKWh / 1.1).toFixed(1)} hrs`],
+            ['Home office — laptop + lights (0.2 kW)', `${(result.usableKWh / 0.2).toFixed(1)} hrs`],
+          ],
+        }],
+      })
+    } finally { setPdfBusy(false) }
+  }, [capacity, dod, eff, load, result])
 
   const sliders = [
-    { label:'Battery capacity', unit:'kWh', val:capacity, set:setCapacity, min:1, max:100, step:0.5, color:'#f97316' },
-    { label:'Depth of discharge (DoD)', unit:'%', val:dod, set:setDod, min:10, max:100, step:5, color:'#0891b2', hint:'Lithium = 80% · Lead-acid = 50%' },
-    { label:'Battery efficiency', unit:'%', val:eff, set:setEff, min:60, max:100, step:1, color:'#059669', hint:'Lithium = 95% · Lead-acid = 80–85%' },
-    { label:'Connected load', unit:'kW', val:load, set:setLoad, min:0.1, max:30, step:0.1, color:'#f97316', hint:'Everything switched on simultaneously' },
+    { label:'Battery capacity', unit:'kWh', val:capacity, set:setCapacity, min:1, max:100, step:0.5, color:'#1B17FF' },
+    { label:'Depth of discharge (DoD)', unit:'%', val:dod, set:setDod, min:10, max:100, step:5, color:'#0f172a', hint:'Lithium = 80% · Lead-acid = 50%' },
+    { label:'Battery efficiency', unit:'%', val:eff, set:setEff, min:60, max:100, step:1, color:'#1e293b', hint:'Lithium = 95% · Lead-acid = 80–85%' },
+    { label:'Connected load', unit:'kW', val:load, set:setLoad, min:0.1, max:30, step:0.1, color:'#1B17FF', hint:'Everything switched on simultaneously' },
   ]
 
   return (
@@ -98,8 +128,8 @@ export default function BatteryRuntimeTool() {
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-8 self-start">Results</h3>
 
               <div className="flex flex-wrap justify-center gap-10 mb-10">
-                <RingGauge pct={runtimePct} color="#f97316" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
-                <RingGauge pct={usablePct}  color="#0891b2" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
+                <RingGauge pct={runtimePct} color="#1B17FF" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
+                <RingGauge pct={usablePct}  color="#0f172a" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
               </div>
 
               {/* Formula */}
@@ -108,9 +138,9 @@ export default function BatteryRuntimeTool() {
                 <div className="space-y-2 font-mono text-xs text-ink-muted">
                   <div className="flex justify-between"><span>Rated capacity</span><span className="text-ink font-semibold">{capacity} kWh</span></div>
                   <div className="flex justify-between"><span>× DoD ({dod}%)</span><span className="text-ink font-semibold">{(capacity*dod/100).toFixed(2)} kWh</span></div>
-                  <div className="flex justify-between"><span>× efficiency ({eff}%)</span><span className="font-bold" style={{ color:'#0891b2' }}>{result.usableKWh.toFixed(2)} kWh usable</span></div>
+                  <div className="flex justify-between"><span>× efficiency ({eff}%)</span><span className="font-bold" style={{ color:'#0f172a' }}>{result.usableKWh.toFixed(2)} kWh usable</span></div>
                   <div className="h-px bg-surface-border my-1" />
-                  <div className="flex justify-between"><span>÷ load ({load.toFixed(1)} kW)</span><span className="font-bold" style={{ color:'#f97316' }}>{result.runtimeHours.toFixed(1)} hours</span></div>
+                  <div className="flex justify-between"><span>÷ load ({load.toFixed(1)} kW)</span><span className="font-bold" style={{ color:'#1B17FF' }}>{result.runtimeHours.toFixed(1)} hours</span></div>
                 </div>
               </div>
 
@@ -131,6 +161,7 @@ export default function BatteryRuntimeTool() {
               </div>
 
               <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> Get a battery design from an engineer</a>
+              <button onClick={downloadPDF} disabled={pdfBusy} className="mt-3 btn-teal w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
             </div>
           </div>
         </div>
