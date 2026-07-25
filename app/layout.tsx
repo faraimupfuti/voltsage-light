@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { AccessProvider } from '@/components/AccessGate'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script defer src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token": "fd494aad6ebb456eb67e072c220d16e4"}' strategy="afterInteractive" />
       </head>
-      <body className="bg-white text-slate-900 antialiased">{children}</body>
+      <body className="bg-white text-slate-900 antialiased"><AccessProvider>{children}</AccessProvider></body>
     </html>
   )
 }

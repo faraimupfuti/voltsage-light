@@ -3,6 +3,7 @@ import{useState,useCallback,useEffect,useRef}from'react'
 import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2}from'lucide-react'
 import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,PSH_TABLE,findPSH,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
+import{useAccess,LeadLock}from'@/components/AccessGate'
 const IC:Record<string,string>={'Irrigation':'💧','Dairy Farming':'🐄','Poultry Farming':'🐓','Piggery':'🐷','Greenhouse Farming':'🌱','Crop Processing':'🌾','Mixed Farming':'🚜'}
 let as=0
 function Lbl({c}:{c:React.ReactNode}){return<span className="block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1">{c}</span>}
@@ -27,6 +28,7 @@ export default function AgriculturalTool(){
   const[sel,setSel]=useState(AG_ACTIVITIES['Irrigation'][0].id)
   const[mN,setMN]=useState(''),[mK,setMK]=useState(0),[mF,setMF]=useState('06:00'),[mT,setMT]=useState('18:00')
   const[result,setResult]=useState<SizingResult|null>(null)
+  const{requireAdvanced}=useAccess()
   const[pdfBusy,setPdfBusy]=useState(false)
   const hRef=useRef<HTMLCanvasElement>(null)
   useEffect(()=>{if(!rows.length){setResult(null);return};setResult(calculateAgriculturalSizing(rows,mode,findPSH(psh).psh,1))},[rows,psh,mode])
@@ -83,7 +85,7 @@ export default function AgriculturalTool(){
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase text-ink-faint">Mode</span>
               <div className="flex rounded-lg overflow-hidden border border-surface-border">
-                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m}</button>)}
+                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>m==='advanced'?requireAdvanced(()=>setMode('advanced')):setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m}</button>)}
               </div>
               {mode==='advanced'&&<span className="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">Power override &amp; multiple periods</span>}
             </div>
@@ -141,6 +143,7 @@ export default function AgriculturalTool(){
             </div>
             <div className="p-6 flex flex-col gap-5">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Results — {findPSH(psh).label}</h3>
+              <LeadLock>
               <div className="bg-surface-subtle rounded-xl p-3 border border-surface-border">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono text-ink-faint uppercase">24-hour load profile</span>
@@ -159,6 +162,7 @@ export default function AgriculturalTool(){
               </div>
               {result&&<div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-xs font-mono text-green-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
               <button onClick={downloadPDF} disabled={!result||pdfBusy} className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
+              </LeadLock>
               <a href="#contact" className="btn-teal justify-center"><Zap size={13}/> Request a detailed agricultural design</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Inverter sized at 1.3× peak running demand to nearest standard size. Final design must be verified by a qualified engineer before installation.</p>
             </div>

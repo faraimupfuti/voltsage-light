@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { Battery, BatteryFull, Clock, Zap, FileDown, Loader2 } from 'lucide-react'
 import { calculateBatteryRuntime } from '@/lib/calculations'
 import { generateSizingReportPDF } from '@/lib/pdfReport'
+import { LeadLock } from '@/components/AccessGate'
 
 function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
   const R = 54, circ = 2 * Math.PI * R
@@ -127,6 +128,7 @@ export default function BatteryRuntimeTool() {
             <div className="p-8 flex flex-col items-center justify-center">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-8 self-start">Results</h3>
 
+              <LeadLock>
               <div className="flex flex-wrap justify-center gap-10 mb-10">
                 <RingGauge pct={runtimePct} color="#1B17FF" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
                 <RingGauge pct={usablePct}  color="#0f172a" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
@@ -159,9 +161,10 @@ export default function BatteryRuntimeTool() {
                   </div>
                 ))}
               </div>
+              <button onClick={downloadPDF} disabled={pdfBusy} className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
+              </LeadLock>
 
               <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> Get a battery design from an engineer</a>
-              <button onClick={downloadPDF} disabled={pdfBusy} className="mt-3 btn-teal w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
             </div>
           </div>
         </div>
