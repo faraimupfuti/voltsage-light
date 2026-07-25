@@ -1,5 +1,6 @@
 'use client'
 import { ShieldCheck, Clock, BadgeCheck, Calculator, MapPin, Gift } from 'lucide-react'
+import Reveal from './Reveal'
 const WHY=[
   {icon:Calculator,color:'#1B17FF',title:'You\'ll know exactly what size system you need',body:'Without a sizing tool, you\'re guessing. Our tool builds a real picture of how much electricity you use and when, then tells you the right inverter size, battery capacity and number of solar panels.'},
   {icon:ShieldCheck,color:'#0f172a',title:'You won\'t overpay for a system that\'s too big',body:'Installers often oversize systems to be "safe" — but you pay for every extra kilowatt. Knowing your actual numbers means you can push back on any quote that recommends more than you need.'},
@@ -31,7 +32,7 @@ export default function WhyTools() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {WHY.map((b,i)=>(
-              <div key={i} className="card p-6 group relative overflow-hidden">
+              <Reveal key={i} delay={i*70} className="card p-6 group relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" style={{background:`linear-gradient(90deg,${b.color},transparent)`}}/>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:`${b.color}12`}}>
@@ -40,7 +41,7 @@ export default function WhyTools() {
                   <h3 className="font-disp font-bold text-sm text-ink uppercase leading-tight">{b.title}</h3>
                 </div>
                 <p className="text-ink-muted text-sm leading-relaxed">{b.body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -54,14 +55,14 @@ export default function WhyTools() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {TOOLS.map((t,i)=>(
-              <div key={i} className="gradient-border rounded-2xl overflow-hidden">
+              <Reveal key={i} delay={i*90} className="gradient-border rounded-2xl overflow-hidden">
                 <div className="card-flat p-6 h-full flex flex-col">
                   <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:t.color}}>{t.who}</div>
                   <h3 className="font-disp font-bold text-xl text-ink uppercase mb-3">{t.name}</h3>
                   <p className="text-ink-muted text-sm flex-1 mb-6 leading-relaxed">{t.what}</p>
                   <a href={t.href} className={`${i===2?'btn-primary':'btn-teal'} justify-center`}>{t.cta}</a>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
           <div className="mt-12 rounded-2xl border border-surface-border bg-white p-8">

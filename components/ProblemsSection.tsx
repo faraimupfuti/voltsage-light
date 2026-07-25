@@ -1,5 +1,6 @@
 'use client'
 import { AlertTriangle, BadgeDollarSign, HelpCircle, FileWarning, Gauge, ShieldOff } from 'lucide-react'
+import Reveal from './Reveal'
 const PROBLEMS=[
   {icon:<Gauge size={22}/>,title:'Installers size systems by guessing',body:'Most solar installers don\'t do a proper load analysis before recommending a system size. They estimate based on your electricity bill or the number of bedrooms — not on what appliances you actually run and when. The result is a system that\'s either too big (you overpay) or too small (it trips and underperforms).',stat:'A 10-minute load analysis prevents years of regret.',color:'#1B17FF'},
   {icon:<BadgeDollarSign size={22}/>,title:'Three quotes, three different systems — which is right?',body:'One installer says 5 kW, another says 8 kW, a third says 10 kW — all for the same house. Without knowing your own numbers, you can\'t judge which is correct. You end up choosing on price, not on accuracy.',stat:'Know your numbers first. Then compare quotes on equal terms.',color:'#14109E'},
@@ -19,17 +20,17 @@ export default function ProblemsSection() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {PROBLEMS.map((p,i)=>(
-            <div key={i} className="card p-6 problem-card group">
+            <Reveal key={i} delay={i*70} className="card p-6 problem-card group" style={{borderLeftColor:p.color}}>
               <div className="flex items-start gap-4 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" style={{background:`${p.color}12`}}><span style={{color:p.color}}>{p.icon}</span></div>
                 <h3 className="font-disp font-bold text-base text-ink uppercase leading-tight pt-1">{p.title}</h3>
               </div>
               <p className="text-ink-muted text-sm leading-relaxed mb-4">{p.body}</p>
               <div className="border-t border-surface-border pt-3"><p className="text-xs font-mono" style={{color:p.color}}>{p.stat}</p></div>
-            </div>
+            </Reveal>
           ))}
         </div>
-        <div className="mt-12 rounded-2xl overflow-hidden border border-surface-border" style={{background:'linear-gradient(135deg,rgba(249,115,22,0.04),rgba(8,145,178,0.04))'}}>
+        <div className="mt-12 rounded-2xl overflow-hidden border border-surface-border" style={{background:'linear-gradient(135deg,rgba(27,23,255,0.04),rgba(15,23,42,0.04))'}}>
           <div className="p-8 flex flex-col sm:flex-row items-center gap-6 justify-between">
             <div>
               <h3 className="font-disp font-bold text-2xl text-ink uppercase mb-2">Use VoltSage before you talk to any installer.</h3>

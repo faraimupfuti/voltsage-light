@@ -86,7 +86,8 @@ export default function BatteryRuntimeTool() {
           </p>
         </div>
 
-        <div className="card-flat rounded-2xl overflow-hidden">
+        <div className="tool-frame">
+        <div className="card-flat tool-frame-inner">
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             {/* LEFT — inputs */}
             <div className="p-8">
@@ -167,6 +168,7 @@ export default function BatteryRuntimeTool() {
               <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> Get a battery design from an engineer</a>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Info cards */}

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import Reveal from './Reveal'
 
 const ARTICLES = [
   {
@@ -183,7 +184,7 @@ export default function ArticlesSection() {
         </div>
         <div className="flex flex-col gap-3">
           {ARTICLES.map((a, i) => (
-            <div key={i} className={`rounded-2xl border overflow-hidden transition-all duration-300 ${open===i?'border-brand-teal shadow-teal':'border-surface-border hover:border-surface-border2 shadow-card'} bg-white`}>
+            <Reveal key={i} delay={i*60} className={`rounded-2xl border overflow-hidden transition-all duration-300 ${open===i?'border-brand-teal shadow-teal':'border-surface-border hover:border-surface-border2 shadow-card'} bg-white`}>
               <button onClick={() => setOpen(open===i?null:i)} className="w-full flex items-center justify-between px-6 py-5 text-left gap-4 group">
                 <div className="flex items-center gap-4 min-w-0">
                   <span className="badge badge-teal flex-shrink-0">{a.tag}</span>
@@ -199,7 +200,7 @@ export default function ArticlesSection() {
                   ))}
                 </div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

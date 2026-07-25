@@ -77,7 +77,8 @@ export default function AgriculturalTool(){
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Agricultural<br/><span className="brand-text-teal">Solar Sizing Tool</span></h2>
           <p className="text-ink-muted text-base leading-relaxed">Farm loads are different. Pumps and motors draw <strong className="text-ink">2–3× their rated power on startup</strong>. Select your farm activity — the equipment list filters automatically.</p>
         </div>
-        <div className="card-flat rounded-2xl overflow-hidden">
+        <div className="tool-frame">
+        <div className="card-flat tool-frame-inner">
           <div className="flex flex-wrap gap-3 px-6 py-4 border-b border-surface-border bg-surface-subtle">
             {(Object.keys(AG_ACTIVITIES)as AgActivity[]).map(a=><button key={a} onClick={()=>setAct(a)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider border transition-all ${act===a?'border-brand-green text-brand-green bg-green-50':'border-surface-border text-ink-faint bg-white'}`}><span>{IC[a]}</span>{a}</button>)}
           </div>
@@ -167,6 +168,7 @@ export default function AgriculturalTool(){
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Inverter sized at 1.3× peak running demand to nearest standard size. Final design must be verified by a qualified engineer before installation.</p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

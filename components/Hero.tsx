@@ -8,8 +8,8 @@ export default function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-white pt-16">
       <div className="absolute inset-0 bg-dots opacity-60 pointer-events-none"/>
-      <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full pointer-events-none" style={{background:'radial-gradient(circle,rgba(249,115,22,0.07) 0%,transparent 70%)'}}/>
-      <div className="absolute bottom-20 left-0 w-[400px] h-[400px] rounded-full pointer-events-none" style={{background:'radial-gradient(circle,rgba(8,145,178,0.07) 0%,transparent 70%)'}}/>
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full pointer-events-none orb-pulse" style={{background:'radial-gradient(circle,rgba(27,23,255,0.07) 0%,transparent 70%)'}}/>
+      <div className="absolute bottom-20 left-0 w-[400px] h-[400px] rounded-full pointer-events-none orb-pulse" style={{background:'radial-gradient(circle,rgba(15,23,42,0.07) 0%,transparent 70%)',animationDelay:'2s'}}/>
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>

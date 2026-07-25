@@ -6,7 +6,7 @@ import { Mail, MessageSquare, Linkedin, Twitter, Facebook, Loader2 } from 'lucid
 export function ContactSection() {
   const [name,    setName]    = useState('')
   const [contact, setContact] = useState('')
-  const [service, setService] = useState('Ask an Engineer')
+  const [service, setService] = useState('Ask a Voltsage Expert')
   const [location,setLocation]= useState('')
   const [message, setMessage] = useState('')
   const [status,  setStatus]  = useState<'idle'|'sending'|'sent'|'error'>('idle')
@@ -33,9 +33,9 @@ export function ContactSection() {
   }
 
   const SERVICES = [
-    { sub:'Energy Advisory Session', name:'Ask an Engineer', desc:'A one-on-one conversation with a VoltSage engineer. We help you understand your energy needs and what size system you actually require — before you commit to buying anything.' },
-    { sub:'Check a quote you already have', name:'Independent Design Review', desc:'Already received a quote from an installer? Send it to us. We check whether the equipment is the right size for your needs and whether the specification makes engineering sense — with nothing to sell you.' },
-    { sub:'Full system design', name:'Engineering Design Package', desc:'A complete, engineer-prepared design for your solar system — sizing verification, single-line diagram, bill of quantities and full specifications. Contact us to discuss your project.' },
+    { sub:'Energy Advisory Session', name:'Ask a Voltsage Expert', desc:'A one-on-one conversation with a VoltSage engineer. We help you understand your energy needs and what size system you actually require — before you commit to buying anything.' },
+    { sub:'Check a quote you already have', name:'Solar Quote Review', desc:'Already received a quote from an installer? Send it to us. We check whether the equipment is the right size for your needs and whether the specification makes engineering sense — with nothing to sell you.' },
+    { sub:'Ask us anything', name:'General Solar questions', desc:'Not sure where to start, or just have a question about solar, batteries or inverters? Ask us anything — no strings attached, and nothing to buy.' },
   ]
 
   return (
@@ -169,7 +169,7 @@ export function Footer() {
           <div>
             <h5 className="font-mono text-[10px] uppercase tracking-widest text-brand-orange mb-3">Services</h5>
             <ul className="space-y-2 text-xs text-ink-faint">
-              {['Ask an Engineer','Independent Design Review','Engineering Design Package'].map(s=>(
+              {['Ask a Voltsage Expert','Solar Quote Review','General Solar questions'].map(s=>(
                 <li key={s}><a href="#contact" className="hover:text-ink-muted transition-colors">{s}</a></li>
               ))}
             </ul>

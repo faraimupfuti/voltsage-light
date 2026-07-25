@@ -80,7 +80,8 @@ export default function ResidentialTool(){
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Solar Sizing Tool</h2>
           <p className="text-ink-muted text-base leading-relaxed">Add your appliances and operating times. The tool builds a real 24-hour load profile and sizes your inverter, battery and PV array — the same methodology a qualified engineer uses.</p>
         </div>
-        <div className="card-flat rounded-2xl overflow-hidden">
+        <div className="tool-frame">
+        <div className="card-flat tool-frame-inner">
           <div className="flex flex-wrap gap-4 items-center justify-between px-6 py-4 border-b border-surface-border bg-white">
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono uppercase text-ink-faint">Mode</span>
@@ -169,6 +170,7 @@ export default function ResidentialTool(){
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Final system sizing and equipment selection should be reviewed and verified by a qualified Engineer or Solar Design Professional before installation.</p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>
