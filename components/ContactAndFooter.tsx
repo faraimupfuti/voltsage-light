@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Image from 'next/image'
-import { Mail, MessageSquare, Linkedin, Twitter, Facebook } from 'lucide-react'
+import { Mail, MessageSquare, Linkedin, Twitter, Facebook, Loader2 } from 'lucide-react'
 
 export function ContactSection() {
   const [name,    setName]    = useState('')
@@ -9,19 +9,33 @@ export function ContactSection() {
   const [service, setService] = useState('Ask an Engineer')
   const [location,setLocation]= useState('')
   const [message, setMessage] = useState('')
-  const [sent,    setSent]    = useState(false)
+  const [status,  setStatus]  = useState<'idle'|'sending'|'sent'|'error'>('idle')
+  const [errorMsg,setErrorMsg]= useState('')
 
-  const submit = () => {
+  const submit = async () => {
     if (!name || !contact) { alert('Please add your name and contact details.'); return }
-    const body = `Name: ${name}\nContact: ${contact}\nLocation: ${location}\nService: ${service}\n\nMessage:\n${message}`
-    window.location.href = `mailto:info@voltsage.co.zw?subject=${encodeURIComponent(`VoltSage enquiry — ${service} — ${name}`)}&body=${encodeURIComponent(body)}`
-    setSent(true)
+    setStatus('sending')
+    setErrorMsg('')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, contact, service, location, message }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong.')
+      setStatus('sent')
+      setName(''); setContact(''); setLocation(''); setMessage('')
+    } catch (err: any) {
+      setStatus('error')
+      setErrorMsg(err.message || 'Could not send your enquiry. Please email us directly.')
+    }
   }
 
   const SERVICES = [
-    { sub:'Energy Advisory Session', name:'LEARN HOW TO USE A SIZING TOOL', desc:'A one-on-one conversation with a VoltSage expert. We help you understand your energy needs and what size system you actually require — before you commit to buying anything.' },
-    { sub:'Check a quote you already have', name:'SOLAR QUOTE REVIEW', desc:'Already received a quote from an installer? Send it to us. We check whether the equipment is the right size for your needs and whether the specification makes engineering sense — with nothing to sell you.' },
-    { sub:'General Questions', name:'GENERAL SOLAR QUESTIONS', desc:'A complete, engineer-prepared design for your solar system — sizing verification, single-line diagram, bill of quantities and full specifications. Contact us to discuss your project.' },
+    { sub:'Energy Advisory Session', name:'Ask an Engineer', desc:'A one-on-one conversation with a VoltSage engineer. We help you understand your energy needs and what size system you actually require — before you commit to buying anything.' },
+    { sub:'Check a quote you already have', name:'Independent Design Review', desc:'Already received a quote from an installer? Send it to us. We check whether the equipment is the right size for your needs and whether the specification makes engineering sense — with nothing to sell you.' },
+    { sub:'Full system design', name:'Engineering Design Package', desc:'A complete, engineer-prepared design for your solar system — sizing verification, single-line diagram, bill of quantities and full specifications. Contact us to discuss your project.' },
   ]
 
   return (
@@ -88,10 +102,11 @@ export function ContactSection() {
                   placeholder="What do you need to power? Do you have a quote already? What's your budget range?"
                   className="tool-input text-sm resize-none" />
               </div>
-              <button onClick={submit} className="btn-primary w-full justify-center">
-                <Mail size={16}/> Send enquiry
+              <button onClick={submit} disabled={status==='sending'} className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                {status==='sending'?<Loader2 size={16} className="animate-spin"/>:<Mail size={16}/>} {status==='sending'?'Sending…':'Send enquiry'}
               </button>
-              {sent&&<div className="bg-teal-50 border border-teal-200 rounded-xl p-4 text-sm font-mono text-teal-700">✓ Your email client should open. If not, email us at <a href="mailto:info@voltsage.co.zw" className="underline">info@voltsage.co.zw</a></div>}
+              {status==='sent'&&<div className="bg-teal-50 border border-teal-200 rounded-xl p-4 text-sm font-mono text-teal-700">✓ Sent — we'll get back to you shortly.</div>}
+              {status==='error'&&<div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm font-mono text-red-500">{errorMsg} You can also email us directly at <a href="mailto:info@voltsage.co" className="underline">info@voltsage.co</a></div>}
             </div>
           </div>
 
@@ -120,7 +135,7 @@ export function ContactSection() {
             <div className="mt-8 pt-6 border-t border-surface-border">
               <p className="text-xs font-mono text-ink-faint mb-3 uppercase tracking-wider">Direct contact</p>
               <div className="space-y-2">
-                <a href="mailto:info@voltsage.co.zw" className="flex items-center gap-2 text-sm text-ink-muted hover:text-brand-teal transition-colors"><Mail size={14}/> info@voltsage.co.zw</a>
+                <a href="mailto:info@voltsage.co" className="flex items-center gap-2 text-sm text-ink-muted hover:text-brand-teal transition-colors"><Mail size={14}/> info@voltsage.co</a>
                 <a href="https://wa.me/263" className="flex items-center gap-2 text-sm text-ink-muted hover:text-brand-green transition-colors"><MessageSquare size={14}/> WhatsApp</a>
               </div>
             </div>
