@@ -90,7 +90,7 @@ export default function BatteryRuntimeTool() {
         <div className="card-flat tool-frame-inner">
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             {/* LEFT — inputs */}
-            <div className="p-8">
+            <div className="p-5 sm:p-8">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-6">Battery parameters</h3>
               <div className="space-y-7">
                 {sliders.map(s => (
@@ -126,7 +126,7 @@ export default function BatteryRuntimeTool() {
             </div>
 
             {/* RIGHT — results */}
-            <div className="p-8 flex flex-col items-center justify-center">
+            <div className="p-5 sm:p-8 flex flex-col items-center justify-center">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-8 self-start">Results</h3>
 
               <LeadLock>

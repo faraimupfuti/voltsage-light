@@ -7,7 +7,7 @@ import{LeadLock}from'@/components/AccessGate'
 const CC:Record<string,string>={'Lighting':'#1B17FF','Entertainment & Electronics':'#4640FF','Refrigeration':'#14109E','Water Systems':'#8D88FF','Kitchen':'#0A0880','Climate Control':'#312ECC','Laundry':'#64748b','High Power Loads':'#0f172a','Miscellaneous':'#94a3b8'}
 const CATS=[...new Set(APPLIANCE_CATALOG.map(a=>a.cat))]
 let rs=0
-function Lbl({c}:{c:React.ReactNode}){return<span className="block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1">{c}</span>}
+function Lbl({c,span}:{c:React.ReactNode;span?:boolean}){return<span className={`block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1 ${span?'col-span-2 sm:col-span-1':''}`}>{c}</span>}
 function RC({label,value,unit,accent=false,amber=false}:{label:string;value:string;unit:string;accent?:boolean;amber?:boolean}){
   const col=amber?'#1B17FF':accent?'#0f172a':'#1e293b'
   return<div className="bg-surface-subtle rounded-xl p-4 border border-surface-border"><div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">{label}</div><div className="font-mono font-bold text-2xl leading-none" style={{color:col}}>{value}<span className="text-sm font-normal text-ink-faint ml-1">{unit}</span></div></div>
@@ -92,7 +92,7 @@ export default function ResidentialTool(){
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase text-ink-faint">Location</span>
               <div className="relative">
-                <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs pr-7" style={{minWidth:210}}>
+                <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs pr-7 min-w-[160px] sm:min-w-[210px]">
                   {PSH_TABLE.map(g=><optgroup key={g.group} label={g.group}>{g.options.map(o=><option key={o.id} value={o.id}>{o.label} — {o.psh} PSH</option>)}</optgroup>)}
                 </select>
                 <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/>
@@ -111,13 +111,13 @@ export default function ResidentialTool(){
                 </select>
                 <button onClick={add} className="btn-teal flex-shrink-0 py-2 px-4 text-xs"><Plus size={14}/> Add</button>
               </div>
-              {rows.length>0&&<div className="grid gap-2 px-1" style={{gridTemplateColumns:'1fr 68px 96px 96px 32px'}}>{['Appliance','Qty','From','To',''].map((h,i)=><Lbl key={i} c={h}/>)}</div>}
+              {rows.length>0&&<div className="grid grid-cols-2 sm:grid-cols-[1fr_68px_96px_96px_32px] gap-2 px-1">{['Appliance','Qty','From','To',''].map((h,i)=><Lbl key={i} c={h} span={i===0}/>)}</div>}
               <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
                 {rows.length===0&&<div className="text-center py-10 text-ink-faint font-mono text-xs uppercase">Add appliances above to start sizing ↑</div>}
                 {rows.map(r=>{const a=APPLIANCE_CATALOG.find(ap=>ap.id===r.applianceId);const nm=r.miscName??a?.name??'Unknown';const ie=a?.type==='energy';return(
                   <div key={r.rowId} className="rounded-xl bg-surface-subtle border border-surface-border p-3 flex flex-col gap-2">
-                    <div className="grid gap-2 items-center" style={{gridTemplateColumns:'1fr 68px 96px 96px 32px'}}>
-                      <div className="font-mono text-[11px] text-ink truncate">{a?.warn&&<span className="text-red-500 mr-1">⚠</span>}{nm}</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-[1fr_68px_96px_96px_32px] gap-2 items-center">
+                      <div className="col-span-2 sm:col-span-1 font-mono text-[11px] text-ink truncate">{a?.warn&&<span className="text-red-500 mr-1">⚠</span>}{nm}</div>
                       <input type="number" min={1} value={r.qty} onChange={e=>upd(r.rowId,{qty:Math.max(1,parseInt(e.target.value)||1)})} className="tool-input text-center text-sm font-semibold !px-1"/>
                       {ie?<div className="col-span-2 text-ink-faint font-mono text-[10px] flex items-center pl-1">continuous · 35% duty</div>:<><input type="time" value={r.periods[0]?.from??'06:00'} onChange={e=>updP(r.rowId,0,'from',e.target.value)} className="tool-input text-xs"/><input type="time" value={r.periods[0]?.to??'22:00'} onChange={e=>updP(r.rowId,0,'to',e.target.value)} className="tool-input text-xs"/></>}
                       <button onClick={()=>rm(r.rowId)} className="text-ink-faint hover:text-red-500 flex items-center justify-center"><Trash2 size={13}/></button>

@@ -70,10 +70,10 @@ export function ContactSection() {
 
         {/* Form + info */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="card p-8">
+          <div className="card p-5 sm:p-8">
             <h3 className="font-disp font-bold text-2xl text-ink uppercase mb-6">Send an enquiry</h3>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Full name *</label>
                   <input value={name} onChange={e=>setName(e.target.value)} placeholder="Tendai Moyo" className="tool-input text-sm" />
@@ -83,7 +83,7 @@ export function ContactSection() {
                   <input value={contact} onChange={e=>setContact(e.target.value)} placeholder="+263 7… or you@email.com" className="tool-input text-sm" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Service needed</label>
                   <select value={service} onChange={e=>setService(e.target.value)} className="tool-input text-sm">

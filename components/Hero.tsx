@@ -14,11 +14,11 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <div className="section-eyebrow mb-6">Free solar sizing tools — use before you buy</div>
-            <h1 className="font-disp font-extrabold text-5xl sm:text-6xl xl:text-7xl leading-[1.0] tracking-tight text-ink mb-6">
+            <h1 className="font-disp font-extrabold text-4xl sm:text-5xl md:text-6xl xl:text-7xl leading-[1.05] sm:leading-[1.0] tracking-tight text-ink mb-6">
               Don&apos;t buy solar<br/><span className="brand-text">until you know</span><br/>what you need.
             </h1>
             <p className="text-lg text-ink-muted leading-relaxed mb-4 max-w-lg">Most people spend thousands on a solar system without knowing if the size is right. VoltSage gives you <strong className="text-ink font-semibold">free professional tools</strong> to figure out exactly what your home, farm or business needs — before you talk to any installer.</p>
-            <p className="text-base text-ink-faint mb-8 max-w-md">No sign-up. No cost. No sales pitch. Just the right numbers in your hands.</p>
+            <p className="text-base text-ink-faint mb-8 max-w-md">Free to use. No cost. No sales pitch. Just the right numbers in your hands.</p>
             <div className="flex flex-wrap gap-4 mb-10">
               <a href="#sizing" className="btn-primary"><Zap size={16}/> Use the free sizing tool</a>
               <a href="#why" className="btn-secondary">Why this matters →</a>
