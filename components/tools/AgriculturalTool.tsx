@@ -3,7 +3,7 @@ import{useState,useCallback,useEffect,useRef}from'react'
 import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2}from'lucide-react'
 import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,PSH_TABLE,findPSH,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
-import{useAccess,LeadLock}from'@/components/AccessGate'
+import{LeadLock}from'@/components/AccessGate'
 const IC:Record<string,string>={'Irrigation':'💧','Dairy Farming':'🐄','Poultry Farming':'🐓','Piggery':'🐷','Greenhouse Farming':'🌱','Crop Processing':'🌾','Mixed Farming':'🚜'}
 let as=0
 function Lbl({c}:{c:React.ReactNode}){return<span className="block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1">{c}</span>}
@@ -28,12 +28,11 @@ export default function AgriculturalTool(){
   const[sel,setSel]=useState(AG_ACTIVITIES['Irrigation'][0].id)
   const[mN,setMN]=useState(''),[mK,setMK]=useState(0),[mF,setMF]=useState('06:00'),[mT,setMT]=useState('18:00')
   const[result,setResult]=useState<SizingResult|null>(null)
-  const{requireAdvanced}=useAccess()
   const[pdfBusy,setPdfBusy]=useState(false)
   const hRef=useRef<HTMLCanvasElement>(null)
   useEffect(()=>{if(!rows.length){setResult(null);return};setResult(calculateAgriculturalSizing(rows,mode,findPSH(psh).psh,1))},[rows,psh,mode])
   useEffect(()=>{if(!hRef.current)return;if(!result){hRef.current.getContext('2d')?.clearRect(0,0,600,180);return};drawH(hRef.current,result.profile)},[result])
-  useEffect(()=>{const eq=AG_ACTIVITIES[act];if(eq.length)setSel(eq[0].id);setRows([])},[act])
+  useEffect(()=>{const eq=AG_ACTIVITIES[act];if(eq.length)setSel(eq[0].id)},[act])
   const downloadPDF=useCallback(async()=>{
     if(!result)return
     setPdfBusy(true)
@@ -86,7 +85,7 @@ export default function AgriculturalTool(){
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase text-ink-faint">Mode</span>
               <div className="flex rounded-lg overflow-hidden border border-surface-border">
-                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>m==='advanced'?requireAdvanced(()=>setMode('advanced')):setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m}</button>)}
+                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m}</button>)}
               </div>
               {mode==='advanced'&&<span className="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">Power override &amp; multiple periods</span>}
             </div>
@@ -109,14 +108,14 @@ export default function AgriculturalTool(){
                 </select>
                 <button onClick={add} className="btn-teal flex-shrink-0 py-2 px-4 text-xs"><Plus size={14}/> Add</button>
               </div>
-              {rows.length>0&&<div className="grid gap-2 px-1" style={{gridTemplateColumns:'1fr 52px 96px 96px 32px'}}>{['Equipment','Qty','From','To',''].map((h,i)=><Lbl key={i} c={h}/>)}</div>}
+              {rows.length>0&&<div className="grid gap-2 px-1" style={{gridTemplateColumns:'1fr 68px 96px 96px 32px'}}>{['Equipment','Qty','From','To',''].map((h,i)=><Lbl key={i} c={h}/>)}</div>}
               <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
                 {rows.length===0&&<div className="text-center py-10 text-ink-faint font-mono text-xs uppercase">Add equipment above ↑</div>}
                 {rows.map(r=>(
                   <div key={r.rowId} className="rounded-xl bg-surface-subtle border border-surface-border p-3 flex flex-col gap-2">
-                    <div className="grid gap-2 items-center" style={{gridTemplateColumns:'1fr 52px 96px 96px 32px'}}>
+                    <div className="grid gap-2 items-center" style={{gridTemplateColumns:'1fr 68px 96px 96px 32px'}}>
                       <div className="font-mono text-[11px] text-ink truncate">{r.name}<span className="text-ink-faint ml-1 text-[10px]">({mode==='advanced'&&r.customKW?r.customKW:r.kw}kW)</span></div>
-                      <input type="number" min={1} value={r.qty} onChange={e=>upd(r.rowId,{qty:Math.max(1,parseInt(e.target.value)||1)})} className="tool-input text-center text-xs"/>
+                      <input type="number" min={1} value={r.qty} onChange={e=>upd(r.rowId,{qty:Math.max(1,parseInt(e.target.value)||1)})} className="tool-input text-center text-sm font-semibold !px-1"/>
                       <input type="time" value={r.periods[0]?.from??'06:00'} onChange={e=>updP(r.rowId,0,'from',e.target.value)} className="tool-input text-xs"/>
                       <input type="time" value={r.periods[0]?.to??'18:00'} onChange={e=>updP(r.rowId,0,'to',e.target.value)} className="tool-input text-xs"/>
                       <button onClick={()=>rm(r.rowId)} className="text-ink-faint hover:text-red-500 flex items-center justify-center"><Trash2 size={13}/></button>
