@@ -92,7 +92,7 @@ export default function ResidentialTool(){
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase text-ink-faint">Location</span>
               <div className="relative">
-                <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs pr-7 min-w-[160px] sm:min-w-[210px]">
+                <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs !pr-7 min-w-[160px] sm:min-w-[210px]">
                   {PSH_TABLE.map(g=><optgroup key={g.group} label={g.group}>{g.options.map(o=><option key={o.id} value={o.id}>{o.label} — {o.psh} PSH</option>)}</optgroup>)}
                 </select>
                 <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/>

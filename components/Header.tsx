@@ -21,7 +21,6 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2.5 group">
           <Image src="/logo.png" alt="VoltSage" width={170} height={36} priority className="h-8 w-auto sm:h-9"/>
-          <span className="hidden sm:block text-[9px] font-mono tracking-[0.2em] text-ink-faint uppercase self-end pb-0.5 border-l border-surface-border pl-2.5">Solutions</span>
         </a>
         <nav className="hidden lg:flex items-center gap-5">
           {NAV.map(n=><a key={n.href} href={n.href} className="text-[11px] font-mono uppercase tracking-widest text-ink-muted hover:text-brand-teal transition-colors">{n.label}</a>)}

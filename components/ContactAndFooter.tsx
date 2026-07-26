@@ -154,7 +154,6 @@ export function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
               <Image src="/logo.png" alt="VoltSage" width={170} height={36} className="h-8 w-auto"/>
-              <span className="text-[9px] font-mono text-ink-faint uppercase tracking-widest self-end pb-0.5 border-l border-surface-border pl-2.5">Solutions</span>
             </div>
             <p className="text-ink-faint text-xs leading-relaxed max-w-xs">Use our free tools before you buy a solar system. Know your numbers. Make a confident decision. We sell no equipment — ever.</p>
           </div>

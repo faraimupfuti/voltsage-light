@@ -94,10 +94,19 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
       <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center mb-3"><Lock size={17} className="text-brand-orange"/></div>
       <h3 className="font-disp font-bold text-lg text-ink mb-1">Sign up to use the tools</h3>
       <p className="text-sm text-ink-muted mb-5">Free — just tell us who you are and we'll unlock the sizing tools for you.</p>
-      <div className="space-y-3">
-        <div className="relative"><User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint"/><input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" className="tool-input pl-9"/></div>
-        <div className="relative"><Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint"/><input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="Email address" className="tool-input pl-9"/></div>
-        <div className="relative"><Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint"/><input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="Mobile number" className="tool-input pl-9"/></div>
+      <div className="space-y-4">
+        <div>
+          <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">Full name</label>
+          <div className="relative"><User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={name} onChange={e=>setName(e.target.value)} placeholder="Tendai Moyo" className="tool-input !pl-10"/></div>
+        </div>
+        <div>
+          <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">Email address</label>
+          <div className="relative"><Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="you@email.com" className="tool-input !pl-10"/></div>
+        </div>
+        <div>
+          <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">Mobile number</label>
+          <div className="relative"><Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="+263 7…" className="tool-input !pl-10"/></div>
+        </div>
       </div>
       {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
       <button onClick={submit} disabled={busy} className="btn-primary w-full justify-center mt-5 disabled:opacity-50 disabled:cursor-not-allowed">
