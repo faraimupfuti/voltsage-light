@@ -65,11 +65,11 @@ const en = {
   signup: {
     title: 'Sign up to use the tools',
     sub: "Free — just tell us who you are and we'll unlock the sizing tools for you.",
-    name: 'Full name', email: 'Email address', mobile: 'Mobile number',
+    name: 'Full name', email: 'Email address',
     submit: 'Unlock the tools', submitting: 'Please wait…',
     privacy: "We'll only use this to follow up about your solar sizing — no spam.",
     lockCta: 'Sign up to view results',
-    error: 'Please fill in your name, a valid email and mobile number.',
+    error: 'Please fill in your name and a valid email.',
   },
   toolsCommon: {
     mode: 'Mode', standard: 'standard', advanced: 'advanced',
@@ -147,11 +147,11 @@ const es: Dict = {
   signup: {
     title: 'Regístrate para usar las herramientas',
     sub: 'Gratis — solo dinos quién eres y desbloquearemos las herramientas para ti.',
-    name: 'Nombre completo', email: 'Correo electrónico', mobile: 'Número de móvil',
+    name: 'Nombre completo', email: 'Correo electrónico',
     submit: 'Desbloquear herramientas', submitting: 'Espera…',
     privacy: 'Solo lo usaremos para dar seguimiento a tu dimensionamiento solar — sin spam.',
     lockCta: 'Regístrate para ver los resultados',
-    error: 'Completa tu nombre, un correo válido y número de móvil.',
+    error: 'Completa tu nombre y un correo válido.',
   },
   toolsCommon: {
     mode: 'Modo', standard: 'estándar', advanced: 'avanzado',
@@ -227,11 +227,11 @@ const pt: Dict = {
   signup: {
     title: 'Cadastre-se para usar as ferramentas',
     sub: 'Grátis — apenas nos diga quem você é e liberaremos as ferramentas para você.',
-    name: 'Nome completo', email: 'Endereço de e-mail', mobile: 'Número de celular',
+    name: 'Nome completo', email: 'Endereço de e-mail',
     submit: 'Liberar ferramentas', submitting: 'Aguarde…',
     privacy: 'Vamos usar isso apenas para acompanhar seu dimensionamento solar — sem spam.',
     lockCta: 'Cadastre-se para ver os resultados',
-    error: 'Preencha seu nome, um e-mail válido e número de celular.',
+    error: 'Preencha seu nome e um e-mail válido.',
   },
   toolsCommon: {
     mode: 'Modo', standard: 'padrão', advanced: 'avançado',
@@ -307,11 +307,11 @@ const fr: Dict = {
   signup: {
     title: "Inscrivez-vous pour utiliser les outils",
     sub: "Gratuit — dites-nous simplement qui vous êtes et nous déverrouillerons les outils pour vous.",
-    name: 'Nom complet', email: 'Adresse e-mail', mobile: 'Numéro de mobile',
+    name: 'Nom complet', email: 'Adresse e-mail',
     submit: 'Déverrouiller les outils', submitting: 'Veuillez patienter…',
     privacy: "Nous l'utiliserons uniquement pour le suivi de votre dimensionnement solaire — pas de spam.",
     lockCta: 'Inscrivez-vous pour voir les résultats',
-    error: 'Veuillez renseigner votre nom, un e-mail valide et un numéro de mobile.',
+    error: 'Veuillez renseigner votre nom et un e-mail valide.',
   },
   toolsCommon: {
     mode: 'Mode', standard: 'standard', advanced: 'avancé',
@@ -387,11 +387,11 @@ const de: Dict = {
   signup: {
     title: 'Registrieren, um die Tools zu nutzen',
     sub: 'Kostenlos — sagen Sie uns einfach, wer Sie sind, und wir schalten die Tools für Sie frei.',
-    name: 'Vollständiger Name', email: 'E-Mail-Adresse', mobile: 'Mobilnummer',
+    name: 'Vollständiger Name', email: 'E-Mail-Adresse',
     submit: 'Tools freischalten', submitting: 'Bitte warten…',
     privacy: 'Wir nutzen dies nur, um zu Ihrer Solar-Dimensionierung nachzufassen — kein Spam.',
     lockCta: 'Registrieren, um Ergebnisse zu sehen',
-    error: 'Bitte geben Sie Ihren Namen, eine gültige E-Mail und Mobilnummer ein.',
+    error: 'Bitte geben Sie Ihren Namen und eine gültige E-Mail ein.',
   },
   toolsCommon: {
     mode: 'Modus', standard: 'Standard', advanced: 'erweitert',

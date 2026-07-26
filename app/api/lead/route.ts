@@ -13,10 +13,9 @@ export async function POST(req: NextRequest) {
 
   const name = String(data.name || '').trim().slice(0, 200)
   const email = String(data.email || '').trim().slice(0, 200)
-  const mobile = String(data.mobile || '').trim().slice(0, 50)
 
-  if (!name || !EMAIL_RE.test(email) || !mobile) {
-    return NextResponse.json({ ok: false, error: 'Please add your name, a valid email and mobile number.' }, { status: 400 })
+  if (!name || !EMAIL_RE.test(email)) {
+    return NextResponse.json({ ok: false, error: 'Please add your name and a valid email.' }, { status: 400 })
   }
 
   try {
@@ -24,7 +23,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name, email, mobile,
+        name, email,
         source: 'voltsage-sizing-tools',
         page: req.headers.get('referer') || undefined,
         ts: new Date().toISOString(),

@@ -1,9 +1,9 @@
 'use client'
 import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react'
-import { X, User, Mail, Phone, Loader2, Lock } from 'lucide-react'
+import { X, User, Mail, Loader2, Lock } from 'lucide-react'
 import { useLang } from './LanguageProvider'
 
-interface Lead { name: string; email: string; mobile: string }
+interface Lead { name: string; email: string }
 interface AccessCtx {
   lead: Lead | null
   requireLead: (onSuccess: () => void) => void
@@ -69,23 +69,22 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
   const { t } = useLang()
   const [name, setName] = useState('')
   const [email, setEmail] = useState(defaultEmail || '')
-  const [mobile, setMobile] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   const submit = async () => {
-    if (!name.trim() || !EMAIL_RE.test(email) || !mobile.trim()) {
+    if (!name.trim() || !EMAIL_RE.test(email)) {
       setError(t.signup.error); return
     }
     setBusy(true); setError('')
     try {
       const res = await fetch('/api/lead', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, mobile }),
+        body: JSON.stringify({ name, email }),
       })
       const data = await res.json()
       if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong.')
-      onSuccess({ name, email, mobile })
+      onSuccess({ name, email })
     } catch (err: any) {
       setError(err.message || 'Could not sign you up. Please try again.')
     } finally { setBusy(false) }
@@ -104,10 +103,6 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
         <div>
           <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">{t.signup.email}</label>
           <div className="relative"><Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="you@email.com" className="tool-input !pl-10"/></div>
-        </div>
-        <div>
-          <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">{t.signup.mobile}</label>
-          <div className="relative"><Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="+263 7…" className="tool-input !pl-10"/></div>
         </div>
       </div>
       {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
