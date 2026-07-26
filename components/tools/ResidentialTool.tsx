@@ -4,6 +4,7 @@ import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2}from'lucide-react'
 import{APPLIANCE_CATALOG,ApplianceRow,PSH_TABLE,findPSH,calculateResidentialSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
 import{LeadLock}from'@/components/AccessGate'
+import{useLang}from'@/components/LanguageProvider'
 const CC:Record<string,string>={'Lighting':'#1B17FF','Entertainment & Electronics':'#4640FF','Refrigeration':'#14109E','Water Systems':'#8D88FF','Kitchen':'#0A0880','Climate Control':'#312ECC','Laundry':'#64748b','High Power Loads':'#0f172a','Miscellaneous':'#94a3b8'}
 const CATS=[...new Set(APPLIANCE_CATALOG.map(a=>a.cat))]
 let rs=0
@@ -25,6 +26,7 @@ function drawHist(canvas:HTMLCanvasElement,profile:number[]){
   ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,pT+plotH+1);ctx.stroke();ctx.beginPath();ctx.moveTo(pL,pT+plotH);ctx.lineTo(pL+plotW,pT+plotH);ctx.stroke()
 }
 export default function ResidentialTool(){
+  const{t}=useLang()
   const[rows,setRows]=useState<ApplianceRow[]>([])
   const[sc,setSc]=useState('Lighting')
   const[si,setSi]=useState(APPLIANCE_CATALOG.find(a=>a.cat==='Lighting')?.id??'')
@@ -83,14 +85,14 @@ export default function ResidentialTool(){
         <div className="card-flat tool-frame-inner">
           <div className="flex flex-wrap gap-4 items-center justify-between px-6 py-4 border-b border-surface-border bg-white">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono uppercase text-ink-faint">Mode</span>
+              <span className="text-xs font-mono uppercase text-ink-faint">{t.toolsCommon.mode}</span>
               <div className="flex rounded-lg overflow-hidden border border-surface-border">
-                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m}</button>)}
+                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m==='standard'?t.toolsCommon.standard:t.toolsCommon.advanced}</button>)}
               </div>
               {mode==='advanced'&&<span className="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">Power override &amp; multiple periods</span>}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase text-ink-faint">Location</span>
+              <span className="text-xs font-mono uppercase text-ink-faint">{t.toolsCommon.location}</span>
               <div className="relative">
                 <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs !pr-7 min-w-[160px] sm:min-w-[210px]">
                   {PSH_TABLE.map(g=><optgroup key={g.group} label={g.group}>{g.options.map(o=><option key={o.id} value={o.id}>{o.label} — {o.psh} PSH</option>)}</optgroup>)}
@@ -163,9 +165,9 @@ export default function ResidentialTool(){
               </div>
               {result&&<div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-xs font-mono text-teal-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
               {result&&(()=>{const t=result.Ed_kWh,e=Object.entries(result.catTotalsWh);if(!t||!e.length)return null;return(<div><Lbl c="Energy breakdown"/><div className="h-3 rounded-full overflow-hidden flex bg-surface-border">{e.map(([c,w])=><div key={c} style={{width:`${(w/1000/t)*100}%`,background:CC[c]??'#64748b'}} title={`${c}: ${(w/1000).toFixed(2)} kWh`} className="h-full"/>)}</div><div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">{e.map(([c,w])=><span key={c} className="flex items-center gap-1 text-[9px] font-mono text-ink-faint"><span className="w-2 h-2 rounded-sm" style={{background:CC[c]}}/>{c} {(w/1000).toFixed(1)} kWh</span>)}</div></div>)})()}
-              <button onClick={downloadPDF} disabled={!result||pdfBusy} className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
+              <button onClick={downloadPDF} disabled={!result||pdfBusy} className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
               </LeadLock>
-              <a href="#contact" className="btn-primary justify-center"><Zap size={13}/> Request a detailed design</a>
+              <a href="#contact" className="btn-primary justify-center"><Zap size={13}/> {t.toolsCommon.requestDesign}</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Final system sizing and equipment selection should be reviewed and verified by a qualified Engineer or Solar Design Professional before installation.</p>
             </div>
           </div>

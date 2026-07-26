@@ -4,6 +4,7 @@ import { Battery, BatteryFull, Clock, Zap, FileDown, Loader2 } from 'lucide-reac
 import { calculateBatteryRuntime } from '@/lib/calculations'
 import { generateSizingReportPDF } from '@/lib/pdfReport'
 import { LeadLock } from '@/components/AccessGate'
+import { useLang } from '@/components/LanguageProvider'
 
 function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
   const R = 54, circ = 2 * Math.PI * R
@@ -27,6 +28,7 @@ function RingGauge({ pct, color, label, value, unit }: { pct:number; color:strin
 }
 
 export default function BatteryRuntimeTool() {
+  const { t } = useLang()
   const [capacity, setCapacity] = useState(5)
   const [dod,      setDod]      = useState(80)
   const [eff,      setEff]      = useState(95)
@@ -162,10 +164,10 @@ export default function BatteryRuntimeTool() {
                   </div>
                 ))}
               </div>
-              <button onClick={downloadPDF} disabled={pdfBusy} className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
+              <button onClick={downloadPDF} disabled={pdfBusy} className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
               </LeadLock>
 
-              <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> Get a battery design from an engineer</a>
+              <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> {t.toolsCommon.requestBattery}</a>
             </div>
           </div>
         </div>

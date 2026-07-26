@@ -1,10 +1,11 @@
 'use client'
 import { Zap, ChevronDown, Sun, Battery, BarChart3 } from 'lucide-react'
-
-const STATS=[{val:'100%',label:'Free to use'},{val:'3',label:'Sizing tools'},{val:'0',label:'Equipment sold'},{val:'5 min',label:'To get your numbers'}]
-const TOOL_PILLS=[{icon:<BarChart3 size={14}/>,label:'Residential Sizing',color:'#1B17FF',href:'#sizing'},{icon:<Sun size={14}/>,label:'Agricultural Sizing',color:'#1e293b',href:'#agricultural'},{icon:<Battery size={14}/>,label:'Battery Runtime',color:'#0f172a',href:'#battery'}]
+import { useLang } from './LanguageProvider'
 
 export default function Hero() {
+  const { t } = useLang()
+  const STATS=[{val:t.hero.stat1v,label:t.hero.stat1l},{val:t.hero.stat2v,label:t.hero.stat2l},{val:t.hero.stat3v,label:t.hero.stat3l},{val:t.hero.stat4v,label:t.hero.stat4l}]
+  const TOOL_PILLS=[{icon:<BarChart3 size={14}/>,label:t.hero.pill1,color:'#1B17FF',href:'#sizing'},{icon:<Sun size={14}/>,label:t.hero.pill2,color:'#1e293b',href:'#agricultural'},{icon:<Battery size={14}/>,label:t.hero.pill3,color:'#0f172a',href:'#battery'}]
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-white pt-16">
       <div className="absolute inset-0 bg-dots opacity-60 pointer-events-none"/>
@@ -13,15 +14,15 @@ export default function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="section-eyebrow mb-6">Free solar sizing tools — use before you buy</div>
+            <div className="section-eyebrow mb-6">{t.hero.eyebrow}</div>
             <h1 className="font-disp font-extrabold text-4xl sm:text-5xl md:text-6xl xl:text-7xl leading-[1.05] sm:leading-[1.0] tracking-tight text-ink mb-6">
-              Don&apos;t buy solar<br/><span className="brand-text">until you know</span><br/>what you need.
+              {t.hero.h1a}<br/><span className="brand-text">{t.hero.h1b}</span><br/>{t.hero.h1c}
             </h1>
-            <p className="text-lg text-ink-muted leading-relaxed mb-4 max-w-lg">Most people spend thousands on a solar system without knowing if the size is right. VoltSage gives you <strong className="text-ink font-semibold">free professional tools</strong> to figure out exactly what your home, farm or business needs — before you talk to any installer.</p>
-            <p className="text-base text-ink-faint mb-8 max-w-md">Free to use. No cost. No sales pitch. Just the right numbers in your hands.</p>
+            <p className="text-lg text-ink-muted leading-relaxed mb-4 max-w-lg">{t.hero.p1.split('{free}')[0]}<strong className="text-ink font-semibold">{t.hero.p1Strong}</strong>{t.hero.p1.split('{free}')[1]}</p>
+            <p className="text-base text-ink-faint mb-8 max-w-md">{t.hero.p2}</p>
             <div className="flex flex-wrap gap-4 mb-10">
-              <a href="#sizing" className="btn-primary"><Zap size={16}/> Use the free sizing tool</a>
-              <a href="#why" className="btn-secondary">Why this matters →</a>
+              <a href="#sizing" className="btn-primary"><Zap size={16}/> {t.hero.cta1}</a>
+              <a href="#why" className="btn-secondary">{t.hero.cta2}</a>
             </div>
             <div className="flex flex-wrap gap-3 mb-10">
               {TOOL_PILLS.map(t=>(

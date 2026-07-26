@@ -4,6 +4,7 @@ import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2}from'lucide-react'
 import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,PSH_TABLE,findPSH,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
 import{LeadLock}from'@/components/AccessGate'
+import{useLang}from'@/components/LanguageProvider'
 const IC:Record<string,string>={'Irrigation':'💧','Dairy Farming':'🐄','Poultry Farming':'🐓','Piggery':'🐷','Greenhouse Farming':'🌱','Crop Processing':'🌾','Mixed Farming':'🚜'}
 let as=0
 function Lbl({c,span}:{c:React.ReactNode;span?:boolean}){return<span className={`block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1 ${span?'col-span-2 sm:col-span-1':''}`}>{c}</span>}
@@ -21,6 +22,7 @@ function drawH(canvas:HTMLCanvasElement,profile:number[]){
   ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,pT+plotH+1);ctx.stroke();ctx.beginPath();ctx.moveTo(pL,pT+plotH);ctx.lineTo(pL+plotW,pT+plotH);ctx.stroke()
 }
 export default function AgriculturalTool(){
+  const{t}=useLang()
   const[act,setAct]=useState<AgActivity>('Irrigation')
   const[psh,setPsh]=useState('harare')
   const[mode,setMode]=useState<'standard'|'advanced'>('standard')
@@ -83,14 +85,14 @@ export default function AgriculturalTool(){
           </div>
           <div className="flex flex-wrap gap-4 items-center px-6 py-3 border-b border-surface-border bg-white">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase text-ink-faint">Mode</span>
+              <span className="text-xs font-mono uppercase text-ink-faint">{t.toolsCommon.mode}</span>
               <div className="flex rounded-lg overflow-hidden border border-surface-border">
-                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m}</button>)}
+                {(['standard','advanced']as const).map(m=><button key={m} onClick={()=>setMode(m)} className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all ${mode===m?'tab-active bg-surface-muted':'text-ink-faint bg-white'}`}>{m==='standard'?t.toolsCommon.standard:t.toolsCommon.advanced}</button>)}
               </div>
               {mode==='advanced'&&<span className="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">Power override &amp; multiple periods</span>}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase text-ink-faint">Location</span>
+              <span className="text-xs font-mono uppercase text-ink-faint">{t.toolsCommon.location}</span>
               <div className="relative">
                 <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs !pr-7 min-w-[160px] sm:min-w-[200px]">
                   {PSH_TABLE.map(g=><optgroup key={g.group} label={g.group}>{g.options.map(o=><option key={o.id} value={o.id}>{o.label} — {o.psh} PSH</option>)}</optgroup>)}
@@ -161,9 +163,9 @@ export default function AgriculturalTool(){
                 <RC label="Recommended PV array" value={result?result.PpvRounded.toFixed(2):'—'} unit="kWp"/>
               </div>
               {result&&<div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-xs font-mono text-green-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
-              <button onClick={downloadPDF} disabled={!result||pdfBusy} className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} Download PDF report</button>
+              <button onClick={downloadPDF} disabled={!result||pdfBusy} className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
               </LeadLock>
-              <a href="#contact" className="btn-teal justify-center"><Zap size={13}/> Request a detailed agricultural design</a>
+              <a href="#contact" className="btn-teal justify-center"><Zap size={13}/> {t.toolsCommon.requestAgDesign}</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Inverter sized at 1.3× peak running demand to nearest standard size. Final design must be verified by a qualified engineer before installation.</p>
             </div>
           </div>
