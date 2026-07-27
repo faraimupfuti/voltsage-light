@@ -1,10 +1,11 @@
 'use client'
-import { useState, useMemo, useCallback } from 'react'
-import { Battery, BatteryFull, Clock, Zap, FileDown, Loader2 } from 'lucide-react'
+import { useState, useMemo, useCallback, useRef } from 'react'
+import { Battery, BatteryFull, Clock, Zap, FileDown, Loader2, HelpCircle } from 'lucide-react'
 import { calculateBatteryRuntime } from '@/lib/calculations'
 import { generateSizingReportPDF } from '@/lib/pdfReport'
 import { LeadLock } from '@/components/AccessGate'
 import { useLang } from '@/components/LanguageProvider'
+import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
 
 function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
   const R = 54, circ = 2 * Math.PI * R
@@ -74,6 +75,18 @@ export default function BatteryRuntimeTool() {
     { label:'Connected load', unit:'kW', val:load, set:setLoad, min:0.1, max:30, step:0.1, color:'#1B17FF', hint:'Everything switched on simultaneously' },
   ]
 
+  const tourRef = useRef<TourHandle>(null)
+  const TOUR_STEPS: TourStep[] = [
+    { target: '[data-tour="batt-card"]', title: 'Welcome to the Battery Runtime Calculator', body: 'This tool tells you exactly how many hours of backup a battery will give you — before you spend money on one. Let\'s walk through it.' },
+    { target: '[data-tour="batt-sliders"]', title: 'Set your battery and load', body: 'Drag each slider: battery capacity, depth of discharge, efficiency, and the load you plan to run. Results update instantly as you move them.' },
+    { target: '[data-tour="batt-manual"]', title: 'Prefer to type exact numbers?', body: 'Capacity and load can also be typed directly here if you already know the exact figures from a spec sheet.' },
+    { target: '[data-tour="batt-gauges"]', title: 'Your results at a glance', body: 'The two rings show your runtime in hours at this load, and how much usable energy the battery actually provides after losses.' },
+    { target: '[data-tour="batt-formula"]', title: 'How the math works', body: 'This breakdown shows exactly how usable energy and runtime are calculated, step by step — no black box.' },
+    { target: '[data-tour="batt-reference"]', title: 'Common reference loads', body: 'See roughly how long your battery would last running everyday combinations like a fridge and lights, or a borehole pump.' },
+    { target: '[data-tour="batt-pdf"]', title: 'Download your report', body: 'Get a branded PDF with your full results — handy to keep or share when comparing batteries.' },
+    { target: '[data-tour="batt-cta"]', title: 'Want an engineer\'s opinion?', body: 'Request a battery design and one of our engineers will help you choose the right one. That\'s the full tour — happy calculating!' },
+  ]
+
   return (
     <section id="battery" className="py-24 bg-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -89,12 +102,15 @@ export default function BatteryRuntimeTool() {
         </div>
 
         <div className="tool-frame">
-        <div className="card-flat tool-frame-inner">
+        <div className="card-flat tool-frame-inner" data-tour="batt-card">
+          <div className="flex justify-end px-6 py-2.5 border-b border-surface-border bg-white">
+            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-ink-faint hover:text-brand-orange transition-colors flex-shrink-0 border border-surface-border hover:border-brand-orange/40 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
+          </div>
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             {/* LEFT — inputs */}
             <div className="p-5 sm:p-8">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-6">Battery parameters</h3>
-              <div className="space-y-7">
+              <div className="space-y-7" data-tour="batt-sliders">
                 {sliders.map(s => (
                   <div key={s.label}>
                     <div className="flex justify-between mb-2">
@@ -115,7 +131,7 @@ export default function BatteryRuntimeTool() {
               </div>
 
               {/* Manual inputs */}
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-6 grid grid-cols-2 gap-3" data-tour="batt-manual">
                 <div>
                   <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Capacity (kWh)</label>
                   <input type="number" min={0.5} step={0.5} value={capacity} onChange={e => setCapacity(parseFloat(e.target.value)||0.5)} className="tool-input text-xs" />
@@ -132,13 +148,13 @@ export default function BatteryRuntimeTool() {
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-8 self-start">Results</h3>
 
               <LeadLock>
-              <div className="flex flex-wrap justify-center gap-10 mb-10">
+              <div className="flex flex-wrap justify-center gap-10 mb-10" data-tour="batt-gauges">
                 <RingGauge pct={runtimePct} color="#1B17FF" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
                 <RingGauge pct={usablePct}  color="#0f172a" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
               </div>
 
               {/* Formula */}
-              <div className="w-full bg-surface-subtle rounded-2xl border border-surface-border p-5 mb-6">
+              <div className="w-full bg-surface-subtle rounded-2xl border border-surface-border p-5 mb-6" data-tour="batt-formula">
                 <div className="font-mono text-[10px] text-ink-faint uppercase tracking-wider mb-3">How it&apos;s calculated</div>
                 <div className="space-y-2 font-mono text-xs text-ink-muted">
                   <div className="flex justify-between"><span>Rated capacity</span><span className="text-ink font-semibold">{capacity} kWh</span></div>
@@ -150,7 +166,7 @@ export default function BatteryRuntimeTool() {
               </div>
 
               {/* Reference loads */}
-              <div className="w-full bg-surface-subtle rounded-xl p-4 text-xs font-mono text-ink-muted border border-surface-border">
+              <div className="w-full bg-surface-subtle rounded-xl p-4 text-xs font-mono text-ink-muted border border-surface-border" data-tour="batt-reference">
                 <div className="flex items-center gap-2 mb-3 text-ink-faint"><Battery size={14}/><span className="uppercase tracking-wider">Common reference loads</span></div>
                 {[
                   { label:'Fridge + 6 LED lights + TV', kw:0.65 },
@@ -164,14 +180,15 @@ export default function BatteryRuntimeTool() {
                   </div>
                 ))}
               </div>
-              <button onClick={downloadPDF} disabled={pdfBusy} className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
+              <button onClick={downloadPDF} disabled={pdfBusy} data-tour="batt-pdf" className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
               </LeadLock>
 
-              <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> {t.toolsCommon.requestBattery}</a>
+              <a href="#contact" data-tour="batt-cta" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> {t.toolsCommon.requestBattery}</a>
             </div>
           </div>
         </div>
         </div>
+        <TourGuide ref={tourRef} tourId="battery" steps={TOUR_STEPS}/>
 
         {/* Info cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
