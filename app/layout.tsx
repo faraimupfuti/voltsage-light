@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { AccessProvider } from '@/components/AccessGate'
 import { LanguageProvider } from '@/components/LanguageProvider'
 import './globals.css'
 
@@ -32,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
       </head>
-      <body className="bg-white text-slate-900 antialiased"><LanguageProvider><AccessProvider>{children}</AccessProvider></LanguageProvider></body>
+      <body className="bg-white text-slate-900 antialiased"><LanguageProvider>{children}</LanguageProvider></body>
     </html>
   )
 }
