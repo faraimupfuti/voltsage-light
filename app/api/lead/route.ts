@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await fetch(WEBHOOK_URL, {
+    const res = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -29,6 +29,10 @@ export async function POST(req: NextRequest) {
         ts: new Date().toISOString(),
       }),
     })
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => '')
+      console.error(`Lead webhook responded ${res.status}: ${bodyText.slice(0, 300)}`)
+    }
   } catch (err) {
     // A webhook hiccup shouldn't block someone from using the free tools —
     // log it and let the signup through.
