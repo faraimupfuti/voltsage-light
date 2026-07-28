@@ -18,18 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <Script defer src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "fd494aad6ebb456eb67e072c220d16e4"}' strategy="afterInteractive" />
-        {/* Google tag (gtag.js) */}
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-RFR1NS0JPF" strategy="afterInteractive" />
-        <Script id="ga-gtag-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-RFR1NS0JPF');
-          `}
-        </Script>
+        {/* Umami analytics */}
+        <Script defer src="https://cloud.umami.is/script.js" data-website-id="8943deb8-9bcf-418b-aa6d-7c88175e3ca8" strategy="afterInteractive" />
       </head>
       <body className="bg-white text-slate-900 antialiased"><LanguageProvider>{children}</LanguageProvider></body>
     </html>
