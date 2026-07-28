@@ -21,6 +21,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <Script defer src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token": "fd494aad6ebb456eb67e072c220d16e4"}' strategy="afterInteractive" />
+        {/* Google tag (gtag.js) */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-RFR1NS0JPF" strategy="afterInteractive" />
+        <Script id="ga-gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-RFR1NS0JPF');
+          `}
+        </Script>
       </head>
       <body className="bg-white text-slate-900 antialiased"><LanguageProvider><AccessProvider>{children}</AccessProvider></LanguageProvider></body>
     </html>
