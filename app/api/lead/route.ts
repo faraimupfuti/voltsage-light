@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const WEBHOOK_URL = process.env.LEAD_WEBHOOK_URL || 'https://hook.eu2.make.com/g0e5lfo59bqdi9k6ej849s34p9vpfhqu'
+const WEBHOOK_URL = process.env.LEAD_WEBHOOK_URL || 'https://hook.us2.make.com/hj6qb3mklp74zq295uhwcrvl9p1fgtla'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(req: NextRequest) {
@@ -12,10 +12,11 @@ export async function POST(req: NextRequest) {
   }
 
   const name = String(data.name || '').trim().slice(0, 200)
+  const country = String(data.country || '').trim().slice(0, 100)
   const email = String(data.email || '').trim().slice(0, 200)
 
-  if (!name || !EMAIL_RE.test(email)) {
-    return NextResponse.json({ ok: false, error: 'Please add your name and a valid email.' }, { status: 400 })
+  if (!name || !country || !EMAIL_RE.test(email)) {
+    return NextResponse.json({ ok: false, error: 'Please add your name, country and a valid email.' }, { status: 400 })
   }
 
   try {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name, email,
+        name, country, email,
         source: 'voltsage-sizing-tools',
         page: req.headers.get('referer') || undefined,
         ts: new Date().toISOString(),

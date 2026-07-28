@@ -1,9 +1,9 @@
 'use client'
 import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react'
-import { X, User, Mail, Loader2, Lock } from 'lucide-react'
+import { X, User, Mail, Globe, Loader2, Lock } from 'lucide-react'
 import { useLang } from './LanguageProvider'
 
-interface Lead { name: string; email: string }
+interface Lead { name: string; country: string; email: string }
 interface AccessCtx {
   lead: Lead | null
   requireLead: (onSuccess: () => void) => void
@@ -68,23 +68,24 @@ function ModalShell({ children, onClose }: { children: ReactNode; onClose: () =>
 function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: string; onClose: () => void; onSuccess: (l: Lead) => void }) {
   const { t } = useLang()
   const [name, setName] = useState('')
+  const [country, setCountry] = useState('')
   const [email, setEmail] = useState(defaultEmail || '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   const submit = async () => {
-    if (!name.trim() || !EMAIL_RE.test(email)) {
+    if (!name.trim() || !country.trim() || !EMAIL_RE.test(email)) {
       setError(t.signup.error); return
     }
     setBusy(true); setError('')
     try {
       const res = await fetch('/api/lead', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, country, email }),
       })
       const data = await res.json()
       if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong.')
-      onSuccess({ name, email })
+      onSuccess({ name, country, email })
     } catch (err: any) {
       setError(err.message || 'Could not sign you up. Please try again.')
     } finally { setBusy(false) }
@@ -99,6 +100,10 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
         <div>
           <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">{t.signup.name}</label>
           <div className="relative"><User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={name} onChange={e=>setName(e.target.value)} placeholder="Tendai Moyo" className="tool-input !pl-10"/></div>
+        </div>
+        <div>
+          <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">{t.signup.country}</label>
+          <div className="relative"><Globe size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/><input value={country} onChange={e=>setCountry(e.target.value)} placeholder="Zimbabwe" className="tool-input !pl-10"/></div>
         </div>
         <div>
           <label className="text-[10px] font-mono uppercase tracking-wider text-ink-faint block mb-1.5">{t.signup.email}</label>
