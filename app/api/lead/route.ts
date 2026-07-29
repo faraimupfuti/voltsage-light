@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const WEBHOOK_URL = process.env.LEAD_WEBHOOK_URL || 'https://hook.us2.make.com/hj6qb3mklp74zq295uhwcrvl9p1fgtla'
+const WEBHOOK_URL = process.env.LEAD_WEBHOOK_URL || 'https://hook.us2.make.com/etdex574y2gjw8x2rmqyj2q0mwrqsnsr'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(req: NextRequest) {
