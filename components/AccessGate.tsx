@@ -73,7 +73,7 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const WEBHOOK_URL = 'https://hook.us2.make.com/etdex574y2gjw8x2rmqyj2q0mwrqsnsr'
+  const WEBHOOK_URL = 'https://hook.us2.make.com/hj6qb3mklp74zq295uhwcrvl9p1fgtla'
 
   const submit = async () => {
     if (!name.trim() || !country.trim() || !EMAIL_RE.test(email)) {
