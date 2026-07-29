@@ -73,21 +73,33 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
+  const WEBHOOK_URL = 'https://hook.us2.make.com/etdex574y2gjw8x2rmqyj2q0mwrqsnsr'
+
   const submit = async () => {
     if (!name.trim() || !country.trim() || !EMAIL_RE.test(email)) {
       setError(t.signup.error); return
     }
     setBusy(true); setError('')
     try {
-      const res = await fetch('/api/lead', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, country, email }),
+      // Sent directly from the browser to Make.com — "no-cors" mode is required
+      // because Make.com's webhook doesn't return CORS headers, so this is a
+      // fire-and-forget call: we can't read a status or response body back.
+      // If the request throws here, it's a real network-level failure (e.g. no
+      // internet connection) — it does NOT mean Make.com rejected the data.
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          name, country, email,
+          source: 'voltsage-sizing-tools',
+          page: typeof window !== 'undefined' ? window.location.href : undefined,
+          ts: new Date().toISOString(),
+        }),
       })
-      const data = await res.json()
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong.')
       onSuccess({ name, country, email })
     } catch (err: any) {
-      setError(err.message || 'Could not sign you up. Please try again.')
+      setError('Could not reach the network. Please check your connection and try again.')
     } finally { setBusy(false) }
   }
 
