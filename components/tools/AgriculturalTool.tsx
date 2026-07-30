@@ -115,7 +115,7 @@ export default function AgriculturalTool(){
                 <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/>
               </div>
             </div>
-            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-ink-faint hover:text-brand-teal transition-colors flex-shrink-0 border border-surface-border hover:border-brand-teal/40 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
+            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-brand-orange hover:text-brand-amber transition-colors flex-shrink-0 border border-brand-orange/40 hover:border-brand-orange/70 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             <div className="p-6 flex flex-col gap-4">
