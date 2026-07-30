@@ -119,7 +119,6 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
           style={{
             top: rect.top - PAD, left: rect.left - PAD,
             width: rect.width + PAD * 2, height: rect.height + PAD * 2,
-            boxShadow: '0 0 0 9999px rgba(255,255,255,0.5)',
             border: '2px solid #1B17FF',
           }}
         />
