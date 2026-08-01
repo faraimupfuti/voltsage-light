@@ -183,7 +183,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-surface-border pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs font-mono text-ink-faint">© {new Date().getFullYear()} VoltSage Solutions Ltd · Preliminary sizing tools for planning purposes only — not a substitute for a detailed engineering assessment.</p>
+          <p className="text-xs font-mono text-ink-faint">© {new Date().getFullYear()} VoltSage Solutions Ltd · Preliminary sizing tools for planning purposes only — not a substitute for a detailed engineering assessment. · <a href="/privacy" className="hover:text-brand-teal transition-colors underline underline-offset-2">Privacy Policy</a></p>
           <div className="flex gap-4">
             {[<Linkedin size={16} key="li"/>,<Twitter size={16} key="tw"/>,<Facebook size={16} key="fb"/>].map((icon,i)=>(
               <a key={i} href="#" className="text-ink-faint hover:text-brand-teal transition-colors">{icon}</a>

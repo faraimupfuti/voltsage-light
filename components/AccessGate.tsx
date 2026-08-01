@@ -126,7 +126,7 @@ function SignupModal({ defaultEmail, onClose, onSuccess }: { defaultEmail?: stri
       <button onClick={submit} disabled={busy} className="btn-primary w-full justify-center mt-5 disabled:opacity-50 disabled:cursor-not-allowed">
         {busy ? <Loader2 size={15} className="animate-spin"/> : null} {busy ? t.signup.submitting : t.signup.submit}
       </button>
-      <p className="text-[10px] text-ink-faint mt-3 text-center">{t.signup.privacy}</p>
+      <p className="text-[10px] text-ink-faint mt-3 text-center">{t.signup.privacy} <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-orange transition-colors">Privacy Policy</a></p>
     </ModalShell>
   )
 }
