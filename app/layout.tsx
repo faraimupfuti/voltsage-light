@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { AccessProvider } from '@/components/AccessGate'
 import { LanguageProvider } from '@/components/LanguageProvider'
+import Analytics from '@/components/Analytics'
+import CookieConsent from '@/components/CookieConsent'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -18,11 +19,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <head>
-        {/* Umami analytics */}
-        <Script defer src="https://cloud.umami.is/script.js" data-website-id="8943deb8-9bcf-418b-aa6d-7c88175e3ca8" strategy="afterInteractive" />
-      </head>
-      <body className="bg-white text-slate-900 antialiased"><LanguageProvider><AccessProvider>{children}</AccessProvider></LanguageProvider></body>
+      <body className="bg-white text-slate-900 antialiased">
+        <Analytics />
+        <LanguageProvider><AccessProvider>{children}</AccessProvider></LanguageProvider>
+        <CookieConsent />
+      </body>
     </html>
   )
 }

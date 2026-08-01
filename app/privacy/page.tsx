@@ -61,7 +61,14 @@ const SECTIONS: { title: string; body: ReactNode }[] = [
   {
     title: 'Cookies & Analytics',
     body: (
-      <p>Our website uses privacy-conscious analytics (Umami) and similar technologies to understand how visitors use our site and tools, so we can improve them. This does not sell or share your data with advertisers. You can manage cookie preferences through your browser settings.</p>
+      <>
+        <p>We use two categories of cookies:</p>
+        <ul>
+          <li><strong>Necessary</strong> — required for the website and sizing tools to function. These are always on and cannot be disabled.</li>
+          <li><strong>Analytics</strong> — privacy-conscious, anonymised analytics (Umami) that help us understand how visitors use our tools, so we can improve them. This does not sell or share your data with advertisers.</li>
+        </ul>
+        <p>Analytics cookies are only activated if you consent via the cookie banner shown when you first visit the site. You can change your choice at any time using the "Cookie Settings" link in the footer.</p>
+      </>
     ),
   },
   {
