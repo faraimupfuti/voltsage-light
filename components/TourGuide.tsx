@@ -119,10 +119,12 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
           style={{
             top: rect.top - PAD, left: rect.left - PAD,
             width: rect.width + PAD * 2, height: rect.height + PAD * 2,
+            boxShadow: '0 0 0 9999px rgba(15,23,42,0.68)',
             border: '2px solid #1B17FF',
           }}
         />
       )}
+      {!rect && <div className="fixed inset-0" style={{ background: 'rgba(15,23,42,0.68)' }} />}
       <div ref={cardRef} onClick={e => e.stopPropagation()} style={cardStyle} className="bg-white rounded-2xl border border-surface-border shadow-card-lg p-5 z-[201]">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-brand-orange">

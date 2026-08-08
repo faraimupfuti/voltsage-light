@@ -104,7 +104,7 @@ export default function BatteryRuntimeTool() {
         <div className="tool-frame">
         <div className="card-flat tool-frame-inner" data-tour="batt-card">
           <div className="flex justify-end px-6 py-2.5 border-b border-surface-border bg-white">
-            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-brand-orange hover:text-brand-amber transition-colors flex-shrink-0 border border-brand-orange/40 hover:border-brand-orange/70 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
+            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-ink-faint hover:text-brand-orange transition-colors flex-shrink-0 border border-surface-border hover:border-brand-orange/40 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             {/* LEFT — inputs */}
@@ -134,11 +134,11 @@ export default function BatteryRuntimeTool() {
               <div className="mt-6 grid grid-cols-2 gap-3" data-tour="batt-manual">
                 <div>
                   <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Capacity (kWh)</label>
-                  <input type="number" min={0.5} step={0.5} value={capacity} onChange={e => setCapacity(parseFloat(e.target.value)||0.5)} className="tool-input text-xs" />
+                  <input type="number" min={0.5} step={0.5} value={capacity===0?'':capacity} onChange={e=>{const v=e.target.value;setCapacity(v===''?0:parseFloat(v)||0)}} onBlur={()=>{if(!capacity||capacity<0.5)setCapacity(0.5)}} className="tool-input text-xs" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-ink-faint block mb-1">Load (kW)</label>
-                  <input type="number" min={0.1} step={0.1} value={load} onChange={e => setLoad(parseFloat(e.target.value)||0.1)} className="tool-input text-xs" />
+                  <input type="number" min={0.1} step={0.1} value={load===0?'':load} onChange={e=>{const v=e.target.value;setLoad(v===''?0:parseFloat(v)||0)}} onBlur={()=>{if(!load||load<0.1)setLoad(0.1)}} className="tool-input text-xs" />
                 </div>
               </div>
             </div>

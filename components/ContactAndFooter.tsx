@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Mail, MessageSquare, Linkedin, Twitter, Facebook, Loader2 } from 'lucide-react'
-import { OPEN_CONSENT_EVENT } from './CookieConsent'
 
 export function ContactSection() {
   const [name,    setName]    = useState('')
@@ -170,7 +169,7 @@ export function Footer() {
             <h5 className="font-mono text-[10px] uppercase tracking-widest text-brand-orange mb-3">Services</h5>
             <ul className="space-y-2 text-xs text-ink-faint">
               {['Ask a Voltsage Expert','Solar Quote Review','General Solar questions'].map(s=>(
-                <li key={s}><a href="#contact" className="hover:text-ink-muted transition-colors">{s}</a></li>
+                <li key={s}><a href="/#contact" className="hover:text-ink-muted transition-colors">{s}</a></li>
               ))}
             </ul>
           </div>
@@ -178,13 +177,13 @@ export function Footer() {
             <h5 className="font-mono text-[10px] uppercase tracking-widest text-brand-green mb-3">Learn</h5>
             <ul className="space-y-2 text-xs text-ink-faint">
               {['Why quotes vary','Surge demand explained','kW vs kVA','Battery technologies','Battery capacity','Solar vs generator'].map(a=>(
-                <li key={a}><a href="#articles" className="hover:text-ink-muted transition-colors">{a}</a></li>
+                <li key={a}><a href="/#articles" className="hover:text-ink-muted transition-colors">{a}</a></li>
               ))}
             </ul>
           </div>
         </div>
         <div className="border-t border-surface-border pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs font-mono text-ink-faint">© {new Date().getFullYear()} VoltSage Solutions Ltd · Preliminary sizing tools for planning purposes only — not a substitute for a detailed engineering assessment. · <a href="/privacy" className="hover:text-brand-teal transition-colors underline underline-offset-2">Privacy Policy</a> · <button onClick={() => window.dispatchEvent(new Event(OPEN_CONSENT_EVENT))} className="hover:text-brand-teal transition-colors underline underline-offset-2">Cookie Settings</button></p>
+          <p className="text-xs font-mono text-ink-faint">© {new Date().getFullYear()} VoltSage Solutions Ltd · Preliminary sizing tools for planning purposes only — not a substitute for a detailed engineering assessment. · <a href="/privacy" className="underline hover:text-ink-muted transition-colors">Privacy Policy</a></p>
           <div className="flex gap-4">
             {[<Linkedin size={16} key="li"/>,<Twitter size={16} key="tw"/>,<Facebook size={16} key="fb"/>].map((icon,i)=>(
               <a key={i} href="#" className="text-ink-faint hover:text-brand-teal transition-colors">{icon}</a>

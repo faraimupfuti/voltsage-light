@@ -115,7 +115,7 @@ export default function AgriculturalTool(){
                 <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/>
               </div>
             </div>
-            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-brand-orange hover:text-brand-amber transition-colors flex-shrink-0 border border-brand-orange/40 hover:border-brand-orange/70 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
+            <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-ink-faint hover:text-brand-teal transition-colors flex-shrink-0 border border-surface-border hover:border-brand-teal/40 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             <div className="p-6 flex flex-col gap-4">
@@ -133,7 +133,7 @@ export default function AgriculturalTool(){
                   <div key={r.rowId} className="rounded-xl bg-surface-subtle border border-surface-border p-3 flex flex-col gap-2">
                     <div className="grid grid-cols-2 sm:grid-cols-[1fr_68px_96px_96px_32px] gap-2 items-center">
                       <div className="col-span-2 sm:col-span-1 font-mono text-[11px] text-ink truncate">{r.name}<span className="text-ink-faint ml-1 text-[10px]">({mode==='advanced'&&r.customKW?r.customKW:r.kw}kW)</span></div>
-                      <input type="number" min={1} value={r.qty} onChange={e=>upd(r.rowId,{qty:Math.max(1,parseInt(e.target.value)||1)})} className="tool-input text-center text-sm font-semibold !px-1"/>
+                      <input type="number" min={1} value={r.qty===0?'':r.qty} onChange={e=>{const v=e.target.value;upd(r.rowId,{qty:v===''?0:Math.max(0,parseInt(v)||0)})}} onBlur={()=>{if(!r.qty||r.qty<1)upd(r.rowId,{qty:1})}} className="tool-input text-center text-sm font-semibold !px-1"/>
                       <input type="time" value={r.periods[0]?.from??'06:00'} onChange={e=>updP(r.rowId,0,'from',e.target.value)} className="tool-input text-xs"/>
                       <input type="time" value={r.periods[0]?.to??'18:00'} onChange={e=>updP(r.rowId,0,'to',e.target.value)} className="tool-input text-xs"/>
                       <button onClick={()=>rm(r.rowId)} className="text-ink-faint hover:text-red-500 flex items-center justify-center"><Trash2 size={13}/></button>
@@ -153,7 +153,7 @@ export default function AgriculturalTool(){
                 <summary className="px-4 py-3 text-xs font-mono uppercase tracking-wider text-brand-green cursor-pointer bg-green-50 list-none flex items-center gap-2"><Plus size={12}/> Add miscellaneous load</summary>
                 <div className="p-4 bg-white grid grid-cols-2 gap-3">
                   <div className="col-span-2"><Lbl c="Description"/><input value={mN} onChange={e=>setMN(e.target.value)} placeholder="e.g. Farm office lights" className="tool-input text-xs"/></div>
-                  <div><Lbl c="Power (kW)"/><input type="number" min={0} step={0.1} value={mK} onChange={e=>setMK(parseFloat(e.target.value)||0)} className="tool-input text-xs"/></div>
+                  <div><Lbl c="Power (kW)"/><input type="number" min={0} step={0.1} value={mK===0?'':mK} onChange={e=>{const v=e.target.value;setMK(v===''?0:parseFloat(v)||0)}} className="tool-input text-xs"/></div>
                   <div><Lbl c="Time of use"/><div className="flex gap-1"><div className="flex-1"><Lbl c="From"/><input type="time" value={mF} onChange={e=>setMF(e.target.value)} className="tool-input text-xs"/></div><div className="flex-1"><Lbl c="To"/><input type="time" value={mT} onChange={e=>setMT(e.target.value)} className="tool-input text-xs"/></div></div></div>
                   <div className="col-span-2"><button onClick={addM} className="btn-teal w-full justify-center">Add miscellaneous load</button></div>
                 </div>
