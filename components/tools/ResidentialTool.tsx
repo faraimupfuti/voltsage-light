@@ -191,7 +191,7 @@ export default function ResidentialTool(){
           </div>
         </div>
         </div>
-        <TourGuide ref={tourRef} tourId="residential" steps={TOUR_STEPS}/>
+        <TourGuide ref={tourRef} tourId="residential" steps={TOUR_STEPS} autoStart={false}/>
       </div>
     </section>
   )
