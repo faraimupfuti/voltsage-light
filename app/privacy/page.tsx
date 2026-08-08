@@ -3,7 +3,7 @@ import Header from '@/components/Header'
 import { Footer } from '@/components/ContactAndFooter'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — VoltSage Solutions',
+  title: 'Privacy Policy',
   description: 'How VoltSage collects, uses, and protects your information.',
 }
 

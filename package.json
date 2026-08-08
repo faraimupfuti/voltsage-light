@@ -2,6 +2,7 @@
   "name": "voltsage-light",
   "version": "1.0.0",
   "private": true,
+  "author": "Farai Mupfuti",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

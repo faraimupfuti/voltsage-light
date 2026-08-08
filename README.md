@@ -1,5 +1,7 @@
 # VoltSage Solutions — Light Theme
 
+Built by Farai Mupfuti.
+
 Clean white professional design of the VoltSage solar sizing platform.
 Same tools, same content, different visual design.
 

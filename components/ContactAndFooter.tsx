@@ -153,7 +153,7 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <Image src="/logo.png" alt="VoltSage" width={170} height={36} className="h-8 w-auto"/>
+              <Image src="/logo.png" alt="VoltSage Solutions — free solar sizing tools" width={170} height={36} className="h-8 w-auto"/>
             </div>
             <p className="text-ink-faint text-xs leading-relaxed max-w-xs">Use our free tools before you buy a solar system. Know your numbers. Make a confident decision. We sell no equipment — ever.</p>
           </div>
