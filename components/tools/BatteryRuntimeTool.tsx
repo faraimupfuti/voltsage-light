@@ -188,7 +188,7 @@ export default function BatteryRuntimeTool() {
           </div>
         </div>
         </div>
-        <TourGuide ref={tourRef} tourId="battery" steps={TOUR_STEPS} autoStart={false}/>
+        <TourGuide ref={tourRef} tourId="battery" steps={TOUR_STEPS}/>
 
         {/* Info cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">

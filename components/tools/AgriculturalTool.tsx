@@ -187,7 +187,7 @@ export default function AgriculturalTool(){
           </div>
         </div>
         </div>
-        <TourGuide ref={tourRef} tourId="agricultural" steps={TOUR_STEPS} autoStart={false}/>
+        <TourGuide ref={tourRef} tourId="agricultural" steps={TOUR_STEPS}/>
       </div>
     </section>
   )

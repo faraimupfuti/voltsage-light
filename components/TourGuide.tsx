@@ -26,17 +26,23 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
   const [idx, setIdx] = useState(0)
   const [rect, setRect] = useState<DOMRect | null>(null)
   const [mobile, setMobile] = useState(false)
+  // True only for the very first, automatically-triggered pop-up. Lets that
+  // one appear as a fixed "toast" (no forced scroll), so several tours
+  // auto-starting at once on page load don't yank the page between each
+  // other's sections. Once the visitor interacts (Next/Back), normal
+  // scroll-to-target behaviour takes over for the rest of that tour.
+  const [isFirstAutoShow, setIsFirstAutoShow] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const key = `voltsage_tour_seen_${tourId}`
 
-  const start = useCallback(() => { setIdx(0); setActive(true) }, [])
+  const start = useCallback(() => { setIdx(0); setIsFirstAutoShow(false); setActive(true) }, [])
   useImperativeHandle(ref, () => ({ start }), [start])
 
   useEffect(() => {
     if (!autoStart) return
     let t: ReturnType<typeof setTimeout>
     try {
-      if (!localStorage.getItem(key)) t = setTimeout(() => start(), autoStartDelay)
+      if (!localStorage.getItem(key)) t = setTimeout(() => { setIdx(0); setIsFirstAutoShow(true); setActive(true) }, autoStartDelay)
     } catch { /* ignore */ }
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,16 +55,16 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  const measure = useCallback(() => {
+  const measure = useCallback((skipScroll: boolean) => {
     const step = steps[idx]
     if (!step) return
     const el = document.querySelector(step.target)
     if (!el) { setRect(null); return }
-    el.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    setTimeout(() => setRect(el.getBoundingClientRect()), 300)
+    if (!skipScroll) el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    setTimeout(() => setRect(el.getBoundingClientRect()), skipScroll ? 0 : 300)
   }, [idx, steps])
 
-  useEffect(() => { if (active) measure() }, [active, measure])
+  useEffect(() => { if (active) measure(isFirstAutoShow && idx === 0) }, [active, idx, measure]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!active) return
@@ -77,9 +83,10 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
   }, [key])
 
   const next = useCallback(() => {
+    setIsFirstAutoShow(false)
     setIdx(i => { if (i < steps.length - 1) return i + 1; finish(); return i })
   }, [steps.length, finish])
-  const prev = useCallback(() => setIdx(i => Math.max(0, i - 1)), [])
+  const prev = useCallback(() => { setIsFirstAutoShow(false); setIdx(i => Math.max(0, i - 1)) }, [])
 
   useEffect(() => {
     if (!active) return
@@ -95,10 +102,13 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
   if (!active || !steps.length) return null
   const step = steps[idx]
   const last = idx === steps.length - 1
+  const toast = isFirstAutoShow && idx === 0
 
   let cardStyle: CSSProperties
   if (mobile) {
     cardStyle = { position: 'fixed', left: 0, right: 0, bottom: 0, borderRadius: '20px 20px 0 0' }
+  } else if (toast) {
+    cardStyle = { position: 'fixed', bottom: 24, right: 24, width: 340 }
   } else if (rect) {
     const CARD_W = 320
     const spaceBelow = window.innerHeight - rect.bottom
@@ -112,20 +122,19 @@ const TourGuide = forwardRef<TourHandle, TourGuideProps>(function TourGuide(
   }
 
   return (
-    <div className="fixed inset-0 z-[200]" onClick={finish}>
-      {rect && (
+    <div className="fixed inset-0 z-[200] pointer-events-none">
+      {rect && !toast && (
         <div
           className="fixed rounded-xl transition-all duration-300 pointer-events-none"
           style={{
             top: rect.top - PAD, left: rect.left - PAD,
             width: rect.width + PAD * 2, height: rect.height + PAD * 2,
-            boxShadow: '0 0 0 9999px rgba(15,23,42,0.68)',
             border: '2px solid #1B17FF',
+            boxShadow: '0 0 0 4px rgba(27,23,255,0.15), 0 8px 24px rgba(27,23,255,0.2)',
           }}
         />
       )}
-      {!rect && <div className="fixed inset-0" style={{ background: 'rgba(15,23,42,0.68)' }} />}
-      <div ref={cardRef} onClick={e => e.stopPropagation()} style={cardStyle} className="bg-white rounded-2xl border border-surface-border shadow-card-lg p-5 z-[201]">
+      <div ref={cardRef} style={cardStyle} className="pointer-events-auto bg-white rounded-2xl border border-surface-border shadow-card-lg p-5 z-[201]">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-brand-orange">
             <Sparkles size={12}/> Step {idx + 1} of {steps.length}
