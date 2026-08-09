@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   publisher: 'VoltSage Solutions',
   alternates: { canonical: SITE_URL },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large' } },
+  verification: { google: 'poEu6LNU4B2X6o_JeJOGD_UA3HthC6hiCxMOxlUQkGk' },
   openGraph: {
     title: 'VoltSage Solutions — Free Solar Sizing Calculator & Energy Tools',
     description: "Don't buy solar until you know what you need. Free tools to size your inverter, battery and solar panels — for homes, farms and businesses.",
