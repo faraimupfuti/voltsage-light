@@ -45,10 +45,10 @@ export default function FoundersPage() {
             <Reveal delay={140}>
               <div className="text-[10px] font-mono uppercase tracking-widest text-brand-orange mb-2">Founder</div>
               <h2 className="font-disp font-bold text-3xl sm:text-4xl text-ink mb-1">Nyasha Mpofu</h2>
-              <p className="text-sm font-mono text-ink-faint uppercase tracking-wide mb-6">Qualified Electrical Engineer</p>
+              <p className="text-sm font-mono text-ink-faint uppercase tracking-wide mb-6">Electrical Engineer</p>
 
               <p className="text-base text-ink-muted leading-relaxed mb-4">
-                Nyasha Mpofu is the founder of VoltSage and a qualified Electrical Engineer. She started VoltSage to
+                Nyasha Mpofu is the founder of VoltSage and an Electrical Engineer. She started VoltSage to
                 close the gap between what solar buyers are told and what the numbers actually say — building free,
                 engineering-led tools that size a system correctly <em className="not-italic text-ink font-medium">before</em> a
                 single panel is bought, not after.
