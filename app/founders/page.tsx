@@ -8,7 +8,7 @@ import { Zap, ShieldCheck, Gauge } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Our Founder',
-  description: 'Meet Nyasha Mpofu, founder of VoltSage and a qualified Electrical Engineer.',
+  description: 'Meet Nyasha Mpofu, founder of VoltSage and an Electrical Engineer.',
 }
 
 const EXPERTISE = [
@@ -36,7 +36,7 @@ export default function FoundersPage() {
             <Reveal delay={80}>
               <div className="tool-frame max-w-sm mx-auto lg:mx-0 transition-transform duration-500 hover:-translate-y-1.5">
                 <div className="tool-frame-inner relative aspect-[4/5]">
-                  <Image src="/nyasha-mpofu.jpg" alt="Nyasha Mpofu, Founder of VoltSage and qualified Electrical Engineer" fill className="object-cover object-top" priority/>
+                  <Image src="/nyasha-mpofu.jpg" alt="Nyasha Mpofu, Founder of VoltSage and Electrical Engineer" fill className="object-cover object-top" priority/>
                 </div>
               </div>
             </Reveal>

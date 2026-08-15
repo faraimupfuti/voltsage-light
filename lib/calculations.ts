@@ -44,3 +44,224 @@ export function calculateAgriculturalSizing(rows:AgEquipmentRow[],mode:'standard
   const pv=Math.ceil(((Ey+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
   return{Ed_kWh:Ed,Enight_kWh:En,Eday_kWh:Ey,Peak_kW:Pk,Surge_kW:Sk,invSize:inv,CbattRounded:Cb,PpvRounded:pv,panelCount:Math.ceil(pv*1000/pWp),autonomyHours:ah,profile:p,catTotalsWh:{}}
 }
+
+// ============================================================
+// Low-Voltage Network Design Tool — Stage 1 (Load Profile Manager)
+// and Stage 2 (System Design Engine, first-pass heuristic rules).
+// Electrical Design (cables/protection/earthing) and 3D
+// Visualisation are NOT implemented — they require an equipment
+// database and electrical code data not yet defined.
+// ============================================================
+
+export interface NetworkLoadRow { id:number; name:string; qty:number; watts:number; surge:number; from:string; to:string }
+
+/** Baseline load-profile calculation for freely-named custom loads (not tied to the appliance catalog). */
+export function calculateNetworkLoadProfile(rows:NetworkLoadRow[], psh:number, autonomy=8, dod=0.8, bEff=0.95, cEff=0.85, mu=0.75, pWp=550):SizingResult {
+  const S=48,H=0.5,p=new Array<number>(S).fill(0)
+  let Ed=0,En=0,Ey=0
+  rows.forEach(r=>{
+    const h=timeToHours(r.from,r.to), nh=nightHoursForPeriod(r.from,r.to)
+    Ed+=r.qty*r.watts*h; En+=r.qty*r.watts*nh; Ey+=r.qty*r.watts*(h-nh)
+    const{start,end}=periodRange(r.from,r.to)
+    for(let s=0;s<S;s++) if(isActiveAtSlot(s*H,start,end)) p[s]+=r.qty*r.watts
+  })
+  let Pm=0,tm=0; p.forEach((w,s)=>{if(w>Pm){Pm=w;tm=s}}); const tM=tm*H
+  let se=0
+  rows.forEach(r=>{
+    if(r.surge<=1) return
+    const{start,end}=periodRange(r.from,r.to)
+    if(isActiveAtSlot(tM,start,end)) se+=r.qty*r.watts*(r.surge-1)
+  })
+  const Ek=Ed/1000, Nk=En/1000, Dk=Ey/1000, Pk=Pm/1000, Sk=(Pm+se)/1000
+  const inv=roundUpToStandardInverter(Pk*1.3)
+  const Cb=Math.ceil((Nk>0?(Nk*autonomy)/(dod*bEff):0)*2)/2
+  const ah=Nk/12>0?(Cb*dod*bEff)/(Nk/12):0
+  const pv=Math.ceil(((Dk+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
+  return{Ed_kWh:Ek,Enight_kWh:Nk,Eday_kWh:Dk,Peak_kW:Pk,Surge_kW:Sk,invSize:inv,CbattRounded:Cb,PpvRounded:pv,panelCount:Math.ceil(pv*1000/pWp),autonomyHours:ah,profile:p,catTotalsWh:{}}
+}
+
+export type SiteSupplyOption = 'grid_only'|'grid_generator'|'generator_only'|'solar_only'|'solar_grid'|'solar_generator'|'solar_grid_generator'|'no_supply'
+export const SITE_SUPPLY_OPTIONS: { id: SiteSupplyOption; label: string; body: string }[] = [
+  { id: 'grid_only', label: 'Grid (Utility) Only', body: 'The site is currently supplied by the utility grid.' },
+  { id: 'grid_generator', label: 'Grid + Generator', body: 'The site has both utility and generator supply.' },
+  { id: 'generator_only', label: 'Generator Only', body: 'The site relies on a generator as its existing electricity source.' },
+  { id: 'solar_only', label: 'Existing Solar Only', body: 'The site currently relies on an existing solar energy system.' },
+  { id: 'solar_grid', label: 'Solar + Grid', body: 'The site has an existing solar system and utility connection.' },
+  { id: 'solar_generator', label: 'Solar + Generator', body: 'The site has an existing solar system and generator.' },
+  { id: 'solar_grid_generator', label: 'Solar + Grid + Generator', body: 'The site has an existing solar system, utility connection and generator.' },
+  { id: 'no_supply', label: 'No Electricity Supply', body: 'The site has no existing solar system, utility connection or generator.' },
+]
+
+export type SitePhase = '1'|'3'
+
+export type EnergyGoal = 'backup'|'independence_no_export'|'independence_export'|'max_solar'|'low_grid'|'cost'|'reliability'
+export const ENERGY_GOALS: { id: EnergyGoal; label: string; body: string }[] = [
+  { id: 'backup', label: 'Backup', body: 'Keep selected loads running during utility outages.' },
+  { id: 'independence_no_export', label: 'Energy Independence (No Export)', body: 'Reduce or eliminate dependence on external electricity sources without exporting electricity.' },
+  { id: 'independence_export', label: 'Energy Independence (Export)', body: 'Reduce dependence on external electricity sources while allowing excess generation to be exported where permitted.' },
+  { id: 'max_solar', label: 'Maximum Solar Utilisation', body: 'Use as much available solar energy as practically possible.' },
+  { id: 'low_grid', label: 'Low Grid / Fuel Consumption', body: 'Minimise electricity purchased from the utility grid.' },
+  { id: 'cost', label: 'Cost Optimisation', body: 'Minimise the lifetime cost of energy for the site.' },
+  { id: 'reliability', label: 'Maximum Reliability', body: 'Prioritise continuity of supply, even if this requires a larger system or higher investment.' },
+]
+
+/** Which goals are selectable for each site supply configuration — per the VoltSage goal mapping matrix. Absence = not applicable. */
+export const GOAL_ELIGIBILITY: Record<SiteSupplyOption, EnergyGoal[]> = {
+  grid_only:             ['backup','independence_no_export','independence_export','max_solar','low_grid','cost','reliability'],
+  grid_generator:        ['backup','independence_no_export','independence_export','max_solar','low_grid','cost','reliability'],
+  generator_only:        ['backup','independence_no_export','max_solar','cost','reliability'],
+  solar_only:            ['independence_no_export','max_solar','cost','reliability'],
+  solar_grid:            ['independence_no_export','independence_export','max_solar','low_grid','cost','reliability'],
+  solar_generator:       ['independence_no_export','max_solar','cost','reliability'],
+  solar_grid_generator:  ['independence_no_export','independence_export','max_solar','low_grid','cost','reliability'],
+  no_supply:             ['independence_no_export','max_solar','cost','reliability'],
+}
+
+/** Goals shown as "Conditional" — technically selectable, but require confirming export/net-metering availability. */
+export const CONDITIONAL_GOALS: Partial<Record<SiteSupplyOption, EnergyGoal[]>> = {
+  grid_only: ['independence_export'],
+  grid_generator: ['independence_export'],
+  solar_grid: ['independence_export'],
+  solar_grid_generator: ['independence_export'],
+}
+
+/** Exact goal adjustment percentages — Section 3 of the VoltSage Premium System Design Engine spec. */
+export const GOAL_ADJUSTMENTS: Record<EnergyGoal, { inv:number; pv:number; batt:number }> = {
+  backup:                  { inv:0.05, pv:0.05, batt:0.05 },
+  independence_no_export:  { inv:0.20, pv:0.25, batt:0.40 },
+  independence_export:     { inv:0.15, pv:0.20, batt:0.10 },
+  max_solar:               { inv:0.20, pv:0.25, batt:0.20 },
+  low_grid:                { inv:0.15, pv:0.20, batt:0.20 },
+  cost:                    { inv:0.10, pv:0.10, batt:0.05 },
+  reliability:             { inv:0.15, pv:0.20, batt:0.60 },
+}
+
+export interface PremiumScenario {
+  goal: EnergyGoal
+  invSize: number   // kW, adjusted (not yet rounded to a standard inverter tier)
+  surge: number      // kW
+  battery: number    // kWh
+  pv: number         // kWp
+}
+
+/**
+ * Section 3 — System Design Engine.
+ * Each selected goal (up to 3, in priority order) produces an INDEPENDENT
+ * scenario computed fresh from the Free Sizing Tool baseline. Adjustments
+ * are NOT cumulative across goals, per spec.
+ */
+export function calculatePremiumScenarios(baseline: SizingResult, goals: EnergyGoal[]): PremiumScenario[] {
+  return goals.slice(0, 3).map(goal => {
+    const adj = GOAL_ADJUSTMENTS[goal]
+    return {
+      goal,
+      invSize: Math.round(baseline.invSize * (1 + adj.inv) * 10) / 10,
+      surge: Math.round(baseline.Surge_kW * (1 + adj.inv) * 100) / 100,
+      battery: Math.round(baseline.CbattRounded * (1 + adj.batt) * 100) / 100,
+      pv: Math.round(baseline.PpvRounded * (1 + adj.pv) * 100) / 100,
+    }
+  })
+}
+
+// ============================================================
+// Section 2 — Generic Equipment Database (Energy Generation & Storage)
+// Seeded directly from the VoltSage generic inverter/battery database.
+// Electrical Conductors, Protection/Isolation and Switching categories
+// are named in the spec but no data or selection rules were provided
+// for them, so they are intentionally not implemented here.
+// ============================================================
+
+export interface GenericInverter {
+  tierId:string; capacityKva:number; capacityKwCont:number; phases:1|3
+  surgeWithstandKva:number; surgeWithstandKw:number; surgeMultiplier:number; surgeDurationS:number
+  pvVocMaxV:number; pvMpptRangeV:string; mpptTrackers:number; pvMaxArrayKw:number; batteryVoltageVdc:string
+}
+export const INVERTER_DB: GenericInverter[] = [
+  { tierId:'T01', capacityKva:1,  capacityKwCont:0.8,  phases:1, surgeWithstandKva:2,   surgeWithstandKw:1.6,  surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:100,  pvMpptRangeV:'30-90',   mpptTrackers:1, pvMaxArrayKw:1,  batteryVoltageVdc:'12' },
+  { tierId:'T02', capacityKva:2,  capacityKwCont:1.6,  phases:1, surgeWithstandKva:4,   surgeWithstandKw:3.2,  surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:145,  pvMpptRangeV:'60-115',  mpptTrackers:1, pvMaxArrayKw:2.4,batteryVoltageVdc:'24' },
+  { tierId:'T03', capacityKva:3,  capacityKwCont:2.4,  phases:1, surgeWithstandKva:6,   surgeWithstandKw:4.8,  surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:145,  pvMpptRangeV:'60-115',  mpptTrackers:1, pvMaxArrayKw:3,  batteryVoltageVdc:'24' },
+  { tierId:'T04', capacityKva:5,  capacityKwCont:4,    phases:1, surgeWithstandKva:10,  surgeWithstandKw:8,    surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:450,  pvMpptRangeV:'120-430', mpptTrackers:2, pvMaxArrayKw:6.5,batteryVoltageVdc:'48' },
+  { tierId:'T05', capacityKva:6,  capacityKwCont:4.8,  phases:1, surgeWithstandKva:12,  surgeWithstandKw:9.6,  surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:500,  pvMpptRangeV:'120-450', mpptTrackers:2, pvMaxArrayKw:7.8,batteryVoltageVdc:'48' },
+  { tierId:'T06', capacityKva:8,  capacityKwCont:6.4,  phases:1, surgeWithstandKva:16,  surgeWithstandKw:12.8, surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:500,  pvMpptRangeV:'120-450', mpptTrackers:2, pvMaxArrayKw:9.5,batteryVoltageVdc:'48' },
+  { tierId:'T07', capacityKva:10, capacityKwCont:8,    phases:1, surgeWithstandKva:20,  surgeWithstandKw:16,   surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:600,  pvMpptRangeV:'150-500', mpptTrackers:2, pvMaxArrayKw:12, batteryVoltageVdc:'48' },
+  { tierId:'T08', capacityKva:12, capacityKwCont:9.6,  phases:1, surgeWithstandKva:24,  surgeWithstandKw:19.2, surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:600,  pvMpptRangeV:'150-500', mpptTrackers:3, pvMaxArrayKw:14, batteryVoltageVdc:'48' },
+  { tierId:'T09', capacityKva:15, capacityKwCont:12,   phases:1, surgeWithstandKva:30,  surgeWithstandKw:24,   surgeMultiplier:2,   surgeDurationS:10, pvVocMaxV:850,  pvMpptRangeV:'200-800', mpptTrackers:3, pvMaxArrayKw:18, batteryVoltageVdc:'48/96' },
+  { tierId:'T10', capacityKva:10, capacityKwCont:8,    phases:3, surgeWithstandKva:15,  surgeWithstandKw:12,   surgeMultiplier:1.5, surgeDurationS:10, pvVocMaxV:600,  pvMpptRangeV:'150-550', mpptTrackers:2, pvMaxArrayKw:12, batteryVoltageVdc:'48/100' },
+  { tierId:'T11', capacityKva:15, capacityKwCont:12,   phases:3, surgeWithstandKva:22.5,surgeWithstandKw:18,   surgeMultiplier:1.5, surgeDurationS:10, pvVocMaxV:850,  pvMpptRangeV:'200-800', mpptTrackers:3, pvMaxArrayKw:18, batteryVoltageVdc:'48/100' },
+  { tierId:'T12', capacityKva:20, capacityKwCont:16,   phases:3, surgeWithstandKva:30,  surgeWithstandKw:24,   surgeMultiplier:1.5, surgeDurationS:10, pvVocMaxV:1000, pvMpptRangeV:'200-950', mpptTrackers:4, pvMaxArrayKw:24, batteryVoltageVdc:'200-500 (HV)' },
+  { tierId:'T13', capacityKva:30, capacityKwCont:24,   phases:3, surgeWithstandKva:45,  surgeWithstandKw:36,   surgeMultiplier:1.5, surgeDurationS:10, pvVocMaxV:1000, pvMpptRangeV:'200-950', mpptTrackers:4, pvMaxArrayKw:36, batteryVoltageVdc:'200-500 (HV)' },
+  { tierId:'T14', capacityKva:40, capacityKwCont:32,   phases:3, surgeWithstandKva:55,  surgeWithstandKw:44,   surgeMultiplier:1.4, surgeDurationS:10, pvVocMaxV:1000, pvMpptRangeV:'200-950', mpptTrackers:6, pvMaxArrayKw:48, batteryVoltageVdc:'200-500 (HV)' },
+  { tierId:'T15', capacityKva:50, capacityKwCont:40,   phases:3, surgeWithstandKva:65,  surgeWithstandKw:52,   surgeMultiplier:1.3, surgeDurationS:10, pvVocMaxV:1000, pvMpptRangeV:'200-950', mpptTrackers:6, pvMaxArrayKw:60, batteryVoltageVdc:'200-500 (HV)' },
+]
+
+export interface GenericBattery {
+  tierId:string; chemistry:string; nominalVoltageVdc:number; capacityAh:number; capacityKwhNominal:number
+  recommendedDodPct:number; usableKwh:number; roundTripEfficiencyPct:number; cycleLife:number; stackable:string
+}
+export const BATTERY_DB: GenericBattery[] = [
+  { tierId:'B01', chemistry:'LiFePO4', nominalVoltageVdc:12, capacityAh:100, capacityKwhNominal:1.28,  recommendedDodPct:90, usableKwh:1.15, roundTripEfficiencyPct:95, cycleLife:4000, stackable:'Series/parallel' },
+  { tierId:'B02', chemistry:'LiFePO4', nominalVoltageVdc:12, capacityAh:200, capacityKwhNominal:2.56,  recommendedDodPct:90, usableKwh:2.3,  roundTripEfficiencyPct:95, cycleLife:4000, stackable:'Series/parallel' },
+  { tierId:'B03', chemistry:'LiFePO4', nominalVoltageVdc:24, capacityAh:100, capacityKwhNominal:2.56,  recommendedDodPct:90, usableKwh:2.3,  roundTripEfficiencyPct:95, cycleLife:4000, stackable:'Series/parallel' },
+  { tierId:'B04', chemistry:'LiFePO4', nominalVoltageVdc:48, capacityAh:100, capacityKwhNominal:5.12,  recommendedDodPct:90, usableKwh:4.61, roundTripEfficiencyPct:95, cycleLife:5000, stackable:'Building block' },
+  { tierId:'B05', chemistry:'LiFePO4', nominalVoltageVdc:48, capacityAh:150, capacityKwhNominal:7.68,  recommendedDodPct:90, usableKwh:6.91, roundTripEfficiencyPct:95, cycleLife:5000, stackable:'Yes' },
+  { tierId:'B06', chemistry:'LiFePO4', nominalVoltageVdc:48, capacityAh:200, capacityKwhNominal:10.24, recommendedDodPct:90, usableKwh:9.22, roundTripEfficiencyPct:95, cycleLife:6000, stackable:'Yes' },
+  { tierId:'B07', chemistry:'LiFePO4', nominalVoltageVdc:48, capacityAh:280, capacityKwhNominal:14.34, recommendedDodPct:90, usableKwh:12.9,roundTripEfficiencyPct:95, cycleLife:6000, stackable:'Yes' },
+  { tierId:'B08', chemistry:'LiFePO4', nominalVoltageVdc:51.2,capacityAh:100, capacityKwhNominal:5.12, recommendedDodPct:90, usableKwh:4.61,roundTripEfficiencyPct:95, cycleLife:6000, stackable:'HV rack stack' },
+  { tierId:'B09', chemistry:'Tubular Lead-Acid', nominalVoltageVdc:12, capacityAh:100, capacityKwhNominal:1.2, recommendedDodPct:50, usableKwh:0.6, roundTripEfficiencyPct:85, cycleLife:1200, stackable:'Parallel bank' },
+  { tierId:'B10', chemistry:'Tubular Lead-Acid', nominalVoltageVdc:12, capacityAh:200, capacityKwhNominal:2.4, recommendedDodPct:50, usableKwh:1.2, roundTripEfficiencyPct:85, cycleLife:1200, stackable:'Series only' },
+  { tierId:'B11', chemistry:'AGM Lead-Acid', nominalVoltageVdc:12, capacityAh:100, capacityKwhNominal:1.2, recommendedDodPct:50, usableKwh:0.6, roundTripEfficiencyPct:85, cycleLife:600, stackable:'Series only' },
+  { tierId:'B12', chemistry:'Gel Lead-Acid', nominalVoltageVdc:12, capacityAh:100, capacityKwhNominal:1.2, recommendedDodPct:50, usableKwh:0.6, roundTripEfficiencyPct:85, cycleLife:900, stackable:'Series only' },
+  { tierId:'B13', chemistry:'Tubular Gel', nominalVoltageVdc:2,  capacityAh:800, capacityKwhNominal:1.6, recommendedDodPct:70, usableKwh:1.12,roundTripEfficiencyPct:85, cycleLife:3000, stackable:'Banks of 24' },
+]
+
+export interface InverterSelectionResult {
+  inverter: GenericInverter | null
+  reason?: string // set when no inverter could be matched
+}
+
+/**
+ * Section 3(i) — Inverter Selection.
+ * Sequence is always Phase -> Surge Capability -> Capacity Matching, never
+ * capacity-first, so an inverter with inadequate surge withstand can never
+ * be selected just because its nominal capacity looks closest.
+ */
+export function selectInverter(scenario: PremiumScenario, phase: SitePhase): InverterSelectionResult {
+  const phaseMatches = INVERTER_DB.filter(inv => inv.phases === Number(phase))
+  const surgeOk = phaseMatches.filter(inv => inv.surgeWithstandKva > scenario.surge)
+  if (!surgeOk.length) return { inverter: null, reason: `No ${phase}-phase inverter in the database has enough surge withstand for ${scenario.surge.toFixed(2)} kW of surge demand.` }
+  let best = surgeOk[0], bestDiff = Math.abs(surgeOk[0].capacityKva - scenario.invSize)
+  surgeOk.forEach(inv => { const d = Math.abs(inv.capacityKva - scenario.invSize); if (d < bestDiff) { best = inv; bestDiff = d } })
+  return { inverter: best }
+}
+
+export interface BatteryModuleOption { tierId:string; chemistry:string; moduleKwh:number; modules:number; resultingKwh:number }
+
+/**
+ * Section 3(ii)-(iii) — Battery Configuration.
+ * Matches battery products to the inverter's battery_voltage_vdc (first
+ * numeric token, to handle dual-voltage entries like "48/96"). Module count
+ * is rounded to the nearest whole module per the spec's worked examples.
+ */
+export function getBatteryModuleOptions(inverter: GenericInverter, scenario: PremiumScenario): BatteryModuleOption[] {
+  const voltMatch = inverter.batteryVoltageVdc.match(/[\d.]+/)
+  if (!voltMatch) return []
+  const targetV = parseFloat(voltMatch[0])
+  return BATTERY_DB
+    .filter(b => Math.abs(b.nominalVoltageVdc - targetV) < 0.01)
+    .map(b => {
+      const modules = Math.max(1, Math.round(scenario.battery / b.capacityKwhNominal))
+      return { tierId: b.tierId, chemistry: b.chemistry, moduleKwh: b.capacityKwhNominal, modules, resultingKwh: Math.round(modules * b.capacityKwhNominal * 100) / 100 }
+    })
+    .sort((a,b) => a.moduleKwh - b.moduleKwh)
+}
+
+/** Section 3(iv) — PV Array Configuration check. */
+export function checkPvCompatibility(scenario: PremiumScenario, inverter: GenericInverter): { ok:boolean; message:string } {
+  const ok = scenario.pv <= inverter.pvMaxArrayKw
+  return {
+    ok,
+    message: ok
+      ? `${scenario.pv.toFixed(2)} kWp is within this inverter's ${inverter.pvMaxArrayKw} kW maximum PV array capacity.`
+      : `${scenario.pv.toFixed(2)} kWp exceeds this inverter's ${inverter.pvMaxArrayKw} kW maximum PV array capacity — a larger inverter or split-array configuration is required.`,
+  }
+}

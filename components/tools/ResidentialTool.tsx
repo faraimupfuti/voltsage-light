@@ -88,6 +88,24 @@ export default function ResidentialTool(){
     {target:'[data-tour="res-pdf"]',title:'Download your report',body:'Get a branded PDF with your full results and load profile — handy to compare against any installer quote.'},
     {target:'[data-tour="res-cta"]',title:'Want a hand from a real engineer?',body:'When you\'re ready, request a detailed design and one of our engineers will take it from here. That\'s the full tour — happy sizing!'},
   ]
+  const sendToNetworkDesign=useCallback(()=>{
+    if(!result)return
+    const netRows:{id:number;name:string;qty:number;watts:number;surge:number;from:string;to:string}[]=[]
+    let nid=1
+    rows.forEach(r=>{
+      const a=APPLIANCE_CATALOG.find(ap=>ap.id===r.applianceId)
+      const nm=r.miscName??a?.name??'Unknown'
+      if(a?.type==='energy'){
+        const w=Math.round(((a.kwh??0)*1000)/24)
+        netRows.push({id:nid++,name:nm,qty:r.qty,watts:w,surge:a.surge??1,from:'00:00',to:'23:59'})
+      }else{
+        const w=r.miscWatt??(mode==='advanced'&&r.customWatt?r.customWatt:(a?.watt??0))
+        r.periods.forEach(p=>netRows.push({id:nid++,name:nm,qty:r.qty,watts:w,surge:a?.surge??1,from:p.from,to:p.to}))
+      }
+    })
+    try{localStorage.setItem('voltsage_network_transfer',JSON.stringify({source:'Residential',rows:netRows,psh}))}catch{}
+    window.location.href='/network-design'
+  },[rows,result,mode,psh])
   return(
     <section id="sizing" className="py-24 bg-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -184,6 +202,7 @@ export default function ResidentialTool(){
               {result&&<div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-xs font-mono text-teal-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
               {result&&(()=>{const t=result.Ed_kWh,e=Object.entries(result.catTotalsWh);if(!t||!e.length)return null;return(<div><Lbl c="Energy breakdown"/><div className="h-3 rounded-full overflow-hidden flex bg-surface-border">{e.map(([c,w])=><div key={c} style={{width:`${(w/1000/t)*100}%`,background:CC[c]??'#64748b'}} title={`${c}: ${(w/1000).toFixed(2)} kWh`} className="h-full"/>)}</div><div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">{e.map(([c,w])=><span key={c} className="flex items-center gap-1 text-[9px] font-mono text-ink-faint"><span className="w-2 h-2 rounded-sm" style={{background:CC[c]}}/>{c} {(w/1000).toFixed(1)} kWh</span>)}</div></div>)})()}
               <button onClick={downloadPDF} disabled={!result||pdfBusy} data-tour="res-pdf" className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
+              {result&&<button onClick={sendToNetworkDesign} className="btn-secondary justify-center">Continue to Network Design →</button>}
               </LeadLock>
               <a href="#contact" data-tour="res-cta" className="btn-primary justify-center"><Zap size={13}/> {t.toolsCommon.requestDesign}</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Final system sizing and equipment selection should be reviewed and verified by a qualified Engineer or Solar Design Professional before installation.</p>
