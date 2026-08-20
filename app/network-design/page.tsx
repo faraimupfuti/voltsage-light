@@ -9,6 +9,9 @@ import {
   SiteSupplyOption, SITE_SUPPLY_OPTIONS, SitePhase,
   EnergyGoal, ENERGY_GOALS, GOAL_ELIGIBILITY, CONDITIONAL_GOALS,
   calculatePremiumScenarios, selectInverter, getBatteryModuleOptions, checkPvCompatibility,
+  PV_MODULE_DB, findPvModule, calculatePvArrayConfig,
+  designBatteryCircuit, designPvCircuit, designAcCircuit, CircuitDesign,
+  DeratingConditions, DEFAULT_DERATING, CABLE_DERATING_AMBIENT_OPTIONS, CABLE_DERATING_GROUPING, CABLE_DERATING_INSTALL,
   PSH_TABLE, findPSH,
 } from '@/lib/calculations'
 import { Plus, Trash2, ChevronDown, ChevronRight, Check, ArrowRight, ArrowLeft, Zap, Cable, Box, FileText, Sparkles, Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
@@ -23,6 +26,26 @@ function RC({label,value,unit,accent=false}:{label:string;value:string;unit:stri
   </div>
 }
 
+function CircuitCard({title,circuit}:{title:string;circuit:CircuitDesign|null}){
+  if(!circuit) return null
+  return (
+    <div className="rounded-lg border border-surface-border bg-surface-subtle p-3">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">{title}</span>
+        <span className="text-[10px] font-mono text-ink-faint">{circuit.designCurrentA} A design current</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <div><span className="block text-ink-faint text-[9px] uppercase">Cable</span><span className="text-ink">{circuit.cable?`${circuit.cable.tierId} (${circuit.cable.mm2}mm²)`:'—'}</span>{circuit.cable && circuit.deratingFactor!==undefined && circuit.deratingFactor<1 && <span className="block text-[9px] text-amber-600">{circuit.cable.currentA}A rated → {circuit.deratedAmpacityA}A derated (×{circuit.deratingFactor})</span>}</div>
+        <div><span className="block text-ink-faint text-[9px] uppercase">Breaker</span><span className="text-ink">{circuit.protection?`${circuit.protection.tierId} (${circuit.protection.currentA}A)`:'—'}</span></div>
+        <div><span className="block text-ink-faint text-[9px] uppercase">Isolator</span><span className="text-ink">{circuit.isolator?`${circuit.isolator.tierId} (${circuit.isolator.currentA}A)`:'—'}</span></div>
+        <div><span className="block text-ink-faint text-[9px] uppercase">{circuit.fuse!==undefined?'Fuse':circuit.spd?'SPD':''}</span><span className="text-ink">{circuit.fuse?`${circuit.fuse.tierId} (${circuit.fuse.currentA}A)`:circuit.spd?`${circuit.spd.tierId} (${circuit.spd.spdType})`:circuit.fuse===null?'Not required':'—'}</span></div>
+      </div>
+      {!circuit.cable && <div className="mt-2 text-[11px] text-red-500">No database cable rated for this current — exceeds largest generic tier, needs a manufacturer-specific or paralleled-conductor design.</div>}
+      {circuit.note && <div className="mt-2 text-[11px] text-amber-600">{circuit.note}</div>}
+    </div>
+  )
+}
+
 export default function NetworkDesignPage(){
   const [step,setStep]=useState(1)
   const [rows,setRows]=useState<NetworkLoadRow[]>([])
@@ -32,6 +55,8 @@ export default function NetworkDesignPage(){
   const [siteNote,setSiteNote]=useState('')
   const [goals,setGoals]=useState<EnergyGoal[]>([])
   const [importedFrom,setImportedFrom]=useState<string|null>(null)
+  const [pvModuleSel,setPvModuleSel]=useState<Record<string,string>>({})
+  const [derating,setDerating]=useState<DeratingConditions>(DEFAULT_DERATING)
 
   useEffect(()=>{
     try{
@@ -231,12 +256,42 @@ export default function NetworkDesignPage(){
                       </div>
                     </div>
 
+                    <div className="rounded-xl border border-surface-border p-4 mb-8 bg-white">
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-3">Site installation conditions (applies to the draft electrical design below)</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label className="text-xs font-mono">
+                          <span className="block text-ink-faint text-[9px] uppercase mb-1">Ambient temperature</span>
+                          <select value={derating.ambientC} onChange={e=>setDerating(d=>({...d,ambientC:Number(e.target.value)}))} className="w-full border border-surface-border rounded-md px-2 py-1.5 bg-white text-ink">
+                            {CABLE_DERATING_AMBIENT_OPTIONS.map(t=><option key={t} value={t}>{t}°C</option>)}
+                          </select>
+                        </label>
+                        <label className="text-xs font-mono">
+                          <span className="block text-ink-faint text-[9px] uppercase mb-1">Grouped circuits</span>
+                          <select value={derating.groupingCircuits} onChange={e=>setDerating(d=>({...d,groupingCircuits:Number(e.target.value)}))} className="w-full border border-surface-border rounded-md px-2 py-1.5 bg-white text-ink">
+                            {CABLE_DERATING_GROUPING.map(g=><option key={g.label} value={g.minCircuits}>{g.label}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-xs font-mono">
+                          <span className="block text-ink-faint text-[9px] uppercase mb-1">Installation method</span>
+                          <select value={derating.installLabel} onChange={e=>setDerating(d=>({...d,installLabel:e.target.value}))} className="w-full border border-surface-border rounded-md px-2 py-1.5 bg-white text-ink">
+                            {CABLE_DERATING_INSTALL.map(i=><option key={i.label} value={i.label}>{i.label}</option>)}
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+
                     <div className="space-y-6 mb-8">
                       {scenarios.map((sc,i)=>{
                         const goalMeta=ENERGY_GOALS.find(g=>g.id===sc.goal)
                         const invRes=selectInverter(sc,phase)
                         const battOpts=invRes.inverter?getBatteryModuleOptions(invRes.inverter,sc):[]
                         const pvCheck=invRes.inverter?checkPvCompatibility(sc,invRes.inverter):null
+                        const modTierId=pvModuleSel[sc.goal]||'M03'
+                        const selMod=findPvModule(modTierId)
+                        const pvArray=(invRes.inverter&&pvCheck?.ok&&selMod)?calculatePvArrayConfig(sc,invRes.inverter,selMod):null
+                        const battCircuit=invRes.inverter?designBatteryCircuit(invRes.inverter,sc,derating):null
+                        const pvCircuit=(invRes.inverter&&selMod&&pvArray)?designPvCircuit(selMod,invRes.inverter,pvArray,derating):null
+                        const acCircuit=invRes.inverter?designAcCircuit(invRes.inverter,phase,derating):null
                         return (
                           <div key={sc.goal} className="rounded-2xl border-2 border-brand-orange bg-brand-orange/5 p-5">
                             <div className="flex items-center gap-2 mb-4">
@@ -258,6 +313,18 @@ export default function NetworkDesignPage(){
                                   <CheckCircle2 size={14} className="text-brand-teal flex-shrink-0"/>
                                   <span className="text-xs font-mono text-ink">Selected inverter: <strong>{invRes.inverter.tierId}</strong> — {invRes.inverter.capacityKva} kVA / {invRes.inverter.capacityKwCont} kW cont., {invRes.inverter.surgeWithstandKva} kVA surge withstand</span>
                                 </div>
+
+                                {invRes.pvFallbackApplied && invRes.closestCapacityInverter && (
+                                  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs font-mono text-amber-700">
+                                    <Info size={13} className="flex-shrink-0"/> The closest-capacity inverter ({invRes.closestCapacityInverter.tierId}) can't fit this scenario's {sc.pv.toFixed(2)} kWp PV array, so {invRes.inverter.tierId} was substituted instead.
+                                  </div>
+                                )}
+
+                                {invRes.pvUnresolvable && (
+                                  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-xs font-mono text-red-500">
+                                    <AlertTriangle size={13} className="flex-shrink-0"/> No {phase}-phase inverter with enough surge withstand can also fit this scenario's {sc.pv.toFixed(2)} kWp PV array — the design requires splitting the array across multiple inverters or reducing PV capacity.
+                                  </div>
+                                )}
 
                                 {battOpts.length>0 ? (
                                   <div className="mb-3">
@@ -285,10 +352,72 @@ export default function NetworkDesignPage(){
                                 )}
 
                                 {pvCheck && (
-                                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono ${pvCheck.ok?'bg-teal-50 border-teal-200 text-teal-700':'bg-red-50 border-red-200 text-red-500'}`}>
+                                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono mb-3 ${pvCheck.ok?'bg-teal-50 border-teal-200 text-teal-700':'bg-red-50 border-red-200 text-red-500'}`}>
                                     {pvCheck.ok?<CheckCircle2 size={13} className="flex-shrink-0"/>:<AlertTriangle size={13} className="flex-shrink-0"/>} {pvCheck.message}
                                   </div>
                                 )}
+
+                                {pvCheck?.ok && (
+                                  <div className="rounded-lg border border-surface-border bg-white p-3.5">
+                                    <div className="flex items-center justify-between gap-3 mb-3">
+                                      <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">PV module &amp; string configuration</div>
+                                      <select value={modTierId} onChange={e=>setPvModuleSel(p=>({...p,[sc.goal]:e.target.value}))} className="text-xs font-mono border border-surface-border rounded-md px-2 py-1 bg-white text-ink">
+                                        {PV_MODULE_DB.map(m=>(
+                                          <option key={m.tierId} value={m.tierId}>{m.tierId} — {m.ratedPowerW}W {m.technology}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+
+                                    {pvArray && (
+                                      pvArray.feasible ? (
+                                        <>
+                                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 font-mono text-xs">
+                                            <div><span className="block text-ink-faint text-[9px] uppercase">Panel count</span><span className="text-ink font-semibold">{pvArray.panelCount} × {selMod!.ratedPowerW}W</span></div>
+                                            <div><span className="block text-ink-faint text-[9px] uppercase">Actual PV array</span><span className="text-ink font-semibold">{pvArray.actualPvKwp.toFixed(2)} kWp</span></div>
+                                            <div><span className="block text-ink-faint text-[9px] uppercase">Series window</span><span className="text-ink font-semibold">{pvArray.seriesMin}–{pvArray.seriesMaxFinal} modules</span></div>
+                                            <div><span className="block text-ink-faint text-[9px] uppercase">Recommended</span><span className="text-brand-teal font-semibold">{pvArray.recommended!.seriesCount}S × {pvArray.recommended!.parallelCount}P</span></div>
+                                          </div>
+                                          {pvArray.validConfigs.length>1 && (
+                                            <div className="overflow-x-auto">
+                                              <table className="w-full text-xs font-mono">
+                                                <thead><tr className="text-ink-faint uppercase text-[9px]"><th className="text-left py-1 pr-3">Config</th><th className="text-right py-1 px-3">Series</th><th className="text-right py-1 pl-3">Parallel strings</th></tr></thead>
+                                                <tbody>
+                                                  {pvArray.validConfigs.map(c=>{
+                                                    const isRec=c.seriesCount===pvArray.recommended!.seriesCount
+                                                    return (
+                                                      <tr key={c.seriesCount} className={`border-t border-surface-border ${isRec?'bg-teal-50/60':''}`}>
+                                                        <td className="py-1 pr-3 text-ink">{c.seriesCount}S × {c.parallelCount}P {isRec&&<span className="text-brand-teal">(recommended)</span>}</td>
+                                                        <td className="py-1 px-3 text-right text-ink-muted">{c.seriesCount}</td>
+                                                        <td className="py-1 pl-3 text-right text-ink-muted">{c.parallelCount}</td>
+                                                      </tr>
+                                                    )
+                                                  })}
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs font-mono text-amber-700">
+                                          <AlertTriangle size={13} className="flex-shrink-0"/> {pvArray.message}
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="rounded-lg border border-dashed border-surface-border2 bg-white p-3.5">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">Electrical design — draft</span>
+                                    <span className="text-[9px] font-mono uppercase text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Pending engineering review</span>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <CircuitCard title="Battery ↔ Inverter DC" circuit={battCircuit}/>
+                                    {pvCheck?.ok && pvArray?.feasible && <CircuitCard title="PV String / Array DC" circuit={pvCircuit}/>}
+                                    <CircuitCard title={`Inverter AC Output (${phase}-phase)`} circuit={acCircuit}/>
+                                  </div>
+                                  <p className="text-[10px] text-ink-faint mt-2 leading-relaxed">Provisional sizing using a standard 1.25× continuous-current margin and ambient/grouping/installation-method derating from the generic cable derating table — not yet cross-checked against VoltSage's formal Electrical Design Specification. For engineering review only.</p>
+                                </div>
                               </>
                             ) : (
                               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs font-mono text-amber-700">

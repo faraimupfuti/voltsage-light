@@ -217,6 +217,9 @@ export const BATTERY_DB: GenericBattery[] = [
 export interface InverterSelectionResult {
   inverter: GenericInverter | null
   reason?: string // set when no inverter could be matched
+  pvFallbackApplied?: boolean       // true if the closest-capacity inverter couldn't fit the PV array and a different one was substituted
+  closestCapacityInverter?: GenericInverter // the inverter that WOULD have been picked on capacity alone
+  pvUnresolvable?: boolean          // true if no phase+surge-eligible inverter fits the required PV array
 }
 
 /**
@@ -224,14 +227,29 @@ export interface InverterSelectionResult {
  * Sequence is always Phase -> Surge Capability -> Capacity Matching, never
  * capacity-first, so an inverter with inadequate surge withstand can never
  * be selected just because its nominal capacity looks closest.
+ *
+ * Section 3(iv) Step 1 addendum — if the closest-capacity inverter can't
+ * accommodate the scenario's PV array, the engine "must flag the
+ * configuration for further adjustment or select an alternative inverter".
+ * Here we take the second path automatically: among the same phase+surge
+ * eligible set, walk outward from the closest-capacity match (by distance)
+ * and substitute the nearest one that also satisfies pv_max_array_power_kW.
+ * If none exist, we fall back to the closest-capacity inverter and let
+ * checkPvCompatibility() report the failure so the user can adjust the design.
  */
 export function selectInverter(scenario: PremiumScenario, phase: SitePhase): InverterSelectionResult {
   const phaseMatches = INVERTER_DB.filter(inv => inv.phases === Number(phase))
   const surgeOk = phaseMatches.filter(inv => inv.surgeWithstandKva > scenario.surge)
   if (!surgeOk.length) return { inverter: null, reason: `No ${phase}-phase inverter in the database has enough surge withstand for ${scenario.surge.toFixed(2)} kW of surge demand.` }
-  let best = surgeOk[0], bestDiff = Math.abs(surgeOk[0].capacityKva - scenario.invSize)
-  surgeOk.forEach(inv => { const d = Math.abs(inv.capacityKva - scenario.invSize); if (d < bestDiff) { best = inv; bestDiff = d } })
-  return { inverter: best }
+
+  const byCloseness = [...surgeOk].sort((a, b) => Math.abs(a.capacityKva - scenario.invSize) - Math.abs(b.capacityKva - scenario.invSize))
+  const closest = byCloseness[0]
+  if (closest.pvMaxArrayKw >= scenario.pv) return { inverter: closest }
+
+  const fallback = byCloseness.find(inv => inv.pvMaxArrayKw >= scenario.pv)
+  if (fallback) return { inverter: fallback, pvFallbackApplied: true, closestCapacityInverter: closest }
+
+  return { inverter: closest, closestCapacityInverter: closest, pvUnresolvable: true }
 }
 
 export interface BatteryModuleOption { tierId:string; chemistry:string; moduleKwh:number; modules:number; resultingKwh:number }
@@ -255,7 +273,7 @@ export function getBatteryModuleOptions(inverter: GenericInverter, scenario: Pre
     .sort((a,b) => a.moduleKwh - b.moduleKwh)
 }
 
-/** Section 3(iv) — PV Array Configuration check. */
+/** Section 3(iv) Step 1 — PV Array Configuration: max array power check. */
 export function checkPvCompatibility(scenario: PremiumScenario, inverter: GenericInverter): { ok:boolean; message:string } {
   const ok = scenario.pv <= inverter.pvMaxArrayKw
   return {
@@ -263,5 +281,305 @@ export function checkPvCompatibility(scenario: PremiumScenario, inverter: Generi
     message: ok
       ? `${scenario.pv.toFixed(2)} kWp is within this inverter's ${inverter.pvMaxArrayKw} kW maximum PV array capacity.`
       : `${scenario.pv.toFixed(2)} kWp exceeds this inverter's ${inverter.pvMaxArrayKw} kW maximum PV array capacity — a larger inverter or split-array configuration is required.`,
+  }
+}
+
+// ============================================================
+// Section 3(iv) Steps 2-3 — PV Module Selection & String Configuration
+// Seeded directly from pv_module_database_generic.csv.
+// ============================================================
+
+export interface GenericPvModule {
+  tierId:string; technology:string; ratedPowerW:number; cellCount:number
+  vocV:number; vmpV:number; iscA:number; impA:number; efficiencyPct:number
+  lengthMm:number; widthMm:number; thicknessMm:number; weightKg:number
+  powerTempCoeffPctPerC:number; vocTempCoeffPctPerC:number; typicalApplication:string
+}
+export const PV_MODULE_DB: GenericPvModule[] = [
+  { tierId:'M01', technology:'Polycrystalline', ratedPowerW:150, cellCount:36,  vocV:22,   vmpV:18,   iscA:8.8,  impA:8.3,  efficiencyPct:15,   lengthMm:1480, widthMm:670,  thicknessMm:35, weightKg:12,   powerTempCoeffPctPerC:-0.45, vocTempCoeffPctPerC:-0.34, typicalApplication:'Small rural/off-grid systems, portable setups' },
+  { tierId:'M02', technology:'Polycrystalline', ratedPowerW:250, cellCount:60,  vocV:37.5, vmpV:30.5, iscA:8.6,  impA:8.2,  efficiencyPct:15.5, lengthMm:1650, widthMm:992,  thicknessMm:35, weightKg:19,   powerTempCoeffPctPerC:-0.41, vocTempCoeffPctPerC:-0.32, typicalApplication:'Budget residential systems' },
+  { tierId:'M03', technology:'Monocrystalline PERC', ratedPowerW:330, cellCount:60,  vocV:40.5, vmpV:33.4, iscA:10.5, impA:9.9,  efficiencyPct:19,   lengthMm:1956, widthMm:992,  thicknessMm:40, weightKg:20,   powerTempCoeffPctPerC:-0.37, vocTempCoeffPctPerC:-0.29, typicalApplication:'Standard residential' },
+  { tierId:'M04', technology:'Monocrystalline PERC Half-Cut', ratedPowerW:400, cellCount:120, vocV:45.9, vmpV:38.5, iscA:11.13,impA:10.39,efficiencyPct:20.1, lengthMm:1755, widthMm:1038, thicknessMm:35, weightKg:20.5, powerTempCoeffPctPerC:-0.35, vocTempCoeffPctPerC:-0.27, typicalApplication:'Residential, small commercial' },
+  { tierId:'M05', technology:'Monocrystalline Half-Cut Bifacial', ratedPowerW:450, cellCount:144, vocV:51.3, vmpV:42.7, iscA:11.29,impA:10.54,efficiencyPct:20.9, lengthMm:1909, widthMm:1134, thicknessMm:35, weightKg:24.5, powerTempCoeffPctPerC:-0.34, vocTempCoeffPctPerC:-0.26, typicalApplication:'Residential, small commercial, agricultural' },
+  { tierId:'M06', technology:'Monocrystalline Half-Cut Bifacial', ratedPowerW:550, cellCount:144, vocV:49.7, vmpV:41.8, iscA:13.94,impA:13.05,efficiencyPct:21.3, lengthMm:2279, widthMm:1134, thicknessMm:35, weightKg:27.5, powerTempCoeffPctPerC:-0.34, vocTempCoeffPctPerC:-0.26, typicalApplication:'Commercial, agricultural, large residential arrays' },
+  { tierId:'M07', technology:'Monocrystalline TOPCon Large-Format Bifacial', ratedPowerW:610, cellCount:132, vocV:53.4, vmpV:44.5, iscA:14.35,impA:13.7, efficiencyPct:22.3, lengthMm:2465, widthMm:1134, thicknessMm:35, weightKg:32.5, powerTempCoeffPctPerC:-0.3,  vocTempCoeffPctPerC:-0.25, typicalApplication:'Commercial, agricultural, ground-mount/utility-adjacent arrays' },
+]
+export function findPvModule(tierId:string){ return PV_MODULE_DB.find(m=>m.tierId===tierId) }
+
+/** Parses an inverter's "150-500" style MPPT voltage range string into {min,max}. */
+function parseMpptRange(range:string):{min:number;max:number}{
+  const m = range.match(/([\d.]+)\s*-\s*([\d.]+)/)
+  return m ? { min: parseFloat(m[1]), max: parseFloat(m[2]) } : { min: 0, max: 0 }
+}
+
+export interface PvStringOption { seriesCount:number; parallelCount:number; balanced:boolean }
+export interface PvArrayConfigResult {
+  module: GenericPvModule
+  panelCount: number              // rounded up to whole modules
+  actualPvKwp: number             // panelCount x ratedPowerW / 1000
+  seriesMin: number                // MPPT-voltage floor
+  seriesMaxMppt: number             // MPPT-voltage ceiling
+  seriesMaxVoc: number             // inverter max PV input voltage / module Voc
+  seriesMaxFinal: number           // min(seriesMaxMppt, seriesMaxVoc)
+  validConfigs: PvStringOption[]   // all series/parallel splits that use every panel in equal-length strings
+  recommended: PvStringOption | null
+  feasible: boolean
+  message: string
+}
+
+/**
+ * Section 3(iv) Steps 2-3 — PV Module Selection & String Configuration.
+ * Given a selected module, calculates the panel count for the scenario's PV
+ * capacity, the valid series-count window (MPPT min/max and Voc-max), then
+ * picks the balanced series/parallel split per the spec's preference order:
+ * equal-length strings > fewer parallel strings > fewer MPPTs used.
+ */
+export function calculatePvArrayConfig(scenario: PremiumScenario, inverter: GenericInverter, module: GenericPvModule): PvArrayConfigResult {
+  const panelCount = Math.ceil((scenario.pv * 1000) / module.ratedPowerW)
+  const actualPvKwp = Math.round((panelCount * module.ratedPowerW) / 10) / 100
+
+  const mppt = parseMpptRange(inverter.pvMpptRangeV)
+  const seriesMin = Math.ceil(mppt.min / module.vmpV)
+  const seriesMaxMppt = Math.floor(mppt.max / module.vmpV)
+  const seriesMaxVoc = Math.floor(inverter.pvVocMaxV / module.vocV)
+  const seriesMaxFinal = Math.min(seriesMaxMppt, seriesMaxVoc)
+
+  if (seriesMin > seriesMaxFinal || seriesMin < 1) {
+    return { module, panelCount, actualPvKwp, seriesMin, seriesMaxMppt, seriesMaxVoc, seriesMaxFinal, validConfigs: [], recommended: null, feasible: false,
+      message: `No valid series-string length exists for this module on this inverter (needs ${seriesMin}-${seriesMaxFinal} modules in series, which is empty or inverted) — choose a different module or inverter.` }
+  }
+
+  // Test every series count in [seriesMin, seriesMaxFinal] for a whole-number, equal-length parallel split.
+  const validConfigs: PvStringOption[] = []
+  for (let s = seriesMin; s <= seriesMaxFinal; s++) {
+    if (panelCount % s === 0) validConfigs.push({ seriesCount: s, parallelCount: panelCount / s, balanced: true })
+  }
+
+  if (!validConfigs.length) {
+    return { module, panelCount, actualPvKwp, seriesMin, seriesMaxMppt, seriesMaxVoc, seriesMaxFinal, validConfigs, recommended: null, feasible: false,
+      message: `${panelCount} × ${module.tierId} modules cannot be split into equal-length strings within the ${seriesMin}-${seriesMaxFinal} series-count window — adjust the panel count or pick a different module.` }
+  }
+
+  // Preference order: fewer parallel strings first (== longer, fewer strings), then fewer MPPTs implied.
+  const recommended = validConfigs.reduce((best, c) => c.parallelCount < best.parallelCount ? c : best, validConfigs[0])
+
+  return { module, panelCount, actualPvKwp, seriesMin, seriesMaxMppt, seriesMaxVoc, seriesMaxFinal, validConfigs, recommended, feasible: true,
+    message: `${recommended.seriesCount} modules in series × ${recommended.parallelCount} parallel string${recommended.parallelCount>1?'s':''} — ${panelCount} × ${module.tierId} panels, ${actualPvKwp.toFixed(2)} kWp actual array capacity.` }
+}
+
+// ============================================================
+// Electrical Design Engine — DRAFT / PROVISIONAL
+// The architecture doc (Sec. 9) and the goal-mapping doc explicitly defer
+// cable/protection/switching methodology to "a separate VoltSage Electrical
+// Design Specification" not yet provided. The selection RULES below (which
+// database tier gets matched) are not spec-derived — they use a standard,
+// widely-used 1.25x continuous-current design margin (the same convention
+// behind NEC 690.8 / IEC 60364 string and main-conductor sizing) purely as
+// a placeholder so the UI has real numbers instead of "coming soon".
+// Cable selection DOES apply cable_derating_multiplier_table.csv (ambient
+// temperature, circuit grouping, installation method) via
+// cableDeratingFactor() below, using site conditions the user selects in
+// the UI (default: 30C free-air single cable, i.e. no derating). Protection
+// device and isolator selection do not apply any derating (their csvs
+// don't define derating dependencies).
+// This must be reviewed against VoltSage's own Electrical Design
+// Specification before being treated as an engineering deliverable.
+// ============================================================
+
+export interface GenericCable { tierId:string; mm2:number; currentA:number; voltageV:number; cores?:number; phaseConfig?:'1'|'3'; insulationTempC:70|90 }
+export const DC_BATTERY_CABLE_DB: GenericCable[] = [
+  { tierId:'DC01', mm2:16,  currentA:100, voltageV:1000, insulationTempC:90 }, { tierId:'DC02', mm2:25,  currentA:127, voltageV:1000, insulationTempC:90 },
+  { tierId:'DC03', mm2:35,  currentA:158, voltageV:1000, insulationTempC:90 }, { tierId:'DC04', mm2:50,  currentA:192, voltageV:1000, insulationTempC:90 },
+  { tierId:'DC05', mm2:70,  currentA:246, voltageV:1000, insulationTempC:90 }, { tierId:'DC06', mm2:95,  currentA:298, voltageV:1000, insulationTempC:90 },
+  { tierId:'DC07', mm2:120, currentA:346, voltageV:1000, insulationTempC:90 }, { tierId:'DC08', mm2:150, currentA:399, voltageV:1000, insulationTempC:90 },
+  { tierId:'DC09', mm2:185, currentA:456, voltageV:1000, insulationTempC:90 }, { tierId:'DC10', mm2:240, currentA:538, voltageV:1000, insulationTempC:90 },
+]
+export const PV_CABLE_DB: GenericCable[] = [
+  { tierId:'PV01', mm2:2.5, currentA:30,  voltageV:1500, insulationTempC:90 }, { tierId:'PV02', mm2:4,  currentA:40,  voltageV:1500, insulationTempC:90 },
+  { tierId:'PV03', mm2:6,   currentA:55,  voltageV:1800, insulationTempC:90 }, { tierId:'PV04', mm2:10, currentA:75,  voltageV:1800, insulationTempC:90 },
+  { tierId:'PV05', mm2:16,  currentA:100, voltageV:1800, insulationTempC:90 }, { tierId:'PV06', mm2:25, currentA:127, voltageV:1800, insulationTempC:90 },
+  { tierId:'PV07', mm2:35,  currentA:158, voltageV:1800, insulationTempC:90 },
+]
+export const AC_CABLE_DB: GenericCable[] = [
+  { tierId:'AC01', mm2:1.5, cores:3, currentA:18,  voltageV:500, phaseConfig:'1', insulationTempC:70 }, { tierId:'AC02', mm2:2.5, cores:3, currentA:25,  voltageV:500, phaseConfig:'1', insulationTempC:70 },
+  { tierId:'AC03', mm2:4,   cores:3, currentA:34,  voltageV:500, phaseConfig:'1', insulationTempC:70 }, { tierId:'AC04', mm2:6,   cores:3, currentA:43,  voltageV:500, phaseConfig:'1', insulationTempC:70 },
+  { tierId:'AC05', mm2:10,  cores:3, currentA:60,  voltageV:500, phaseConfig:'1', insulationTempC:70 }, { tierId:'AC06', mm2:16,  cores:3, currentA:80,  voltageV:750, phaseConfig:'1', insulationTempC:70 },
+  { tierId:'AC07', mm2:25,  cores:3, currentA:101, voltageV:750, phaseConfig:'1', insulationTempC:70 }, { tierId:'AC08', mm2:35,  cores:3, currentA:126, voltageV:750, phaseConfig:'1', insulationTempC:70 },
+  { tierId:'AC09', mm2:10,  cores:5, currentA:52,  voltageV:750, phaseConfig:'3', insulationTempC:70 }, { tierId:'AC10', mm2:16,  cores:5, currentA:69,  voltageV:750, phaseConfig:'3', insulationTempC:70 },
+  { tierId:'AC11', mm2:25,  cores:5, currentA:87,  voltageV:750, phaseConfig:'3', insulationTempC:70 }, { tierId:'AC12', mm2:35,  cores:5, currentA:108, voltageV:750, phaseConfig:'3', insulationTempC:70 },
+  { tierId:'AC13', mm2:50,  cores:5, currentA:131, voltageV:750, phaseConfig:'3', insulationTempC:70 },
+]
+
+export interface GenericProtectionDevice { tierId:string; currentA:number; voltageV:number; category:'pv'|'battery'|'ac1'|'ac3' }
+export const DC_BREAKER_DB: GenericProtectionDevice[] = [
+  { tierId:'DB01', currentA:16,  voltageV:1000, category:'pv' }, { tierId:'DB02', currentA:20,  voltageV:1000, category:'pv' },
+  { tierId:'DB03', currentA:25,  voltageV:1000, category:'pv' }, { tierId:'DB04', currentA:32,  voltageV:1000, category:'pv' },
+  { tierId:'DB05', currentA:40,  voltageV:1000, category:'pv' }, { tierId:'DB06', currentA:63,  voltageV:1000, category:'pv' },
+  { tierId:'DB07', currentA:100, voltageV:125,  category:'battery' }, { tierId:'DB08', currentA:160, voltageV:125,  category:'battery' },
+  { tierId:'DB09', currentA:250, voltageV:125,  category:'battery' }, { tierId:'DB10', currentA:400, voltageV:125,  category:'battery' },
+]
+export const DC_FUSE_DB: GenericProtectionDevice[] = [
+  { tierId:'DF01', currentA:10,  voltageV:1000, category:'pv' }, { tierId:'DF02', currentA:15,  voltageV:1000, category:'pv' },
+  { tierId:'DF03', currentA:20,  voltageV:1000, category:'pv' }, { tierId:'DF04', currentA:30,  voltageV:1000, category:'pv' },
+  { tierId:'DF05', currentA:125, voltageV:58,   category:'battery' }, { tierId:'DF06', currentA:200, voltageV:58,   category:'battery' },
+  { tierId:'DF07', currentA:315, voltageV:80,   category:'battery' }, { tierId:'DF08', currentA:400, voltageV:80,   category:'battery' },
+  { tierId:'DF09', currentA:630, voltageV:125,  category:'battery' },
+]
+export const DC_ISOLATOR_DB: GenericProtectionDevice[] = [
+  { tierId:'DI01', currentA:16,  voltageV:1000, category:'pv' }, { tierId:'DI02', currentA:25,  voltageV:1000, category:'pv' },
+  { tierId:'DI03', currentA:32,  voltageV:1000, category:'pv' }, { tierId:'DI04', currentA:40,  voltageV:1000, category:'pv' },
+  { tierId:'DI05', currentA:63,  voltageV:1000, category:'pv' }, { tierId:'DI06', currentA:100, voltageV:120,  category:'battery' },
+  { tierId:'DI07', currentA:160, voltageV:120,  category:'battery' }, { tierId:'DI08', currentA:250, voltageV:120,  category:'battery' },
+  { tierId:'DI09', currentA:400, voltageV:120,  category:'battery' },
+]
+export const AC_BREAKER_DB: GenericProtectionDevice[] = [
+  { tierId:'AB01', currentA:16,  voltageV:230, category:'ac1' }, { tierId:'AB02', currentA:20,  voltageV:230, category:'ac1' },
+  { tierId:'AB03', currentA:32,  voltageV:230, category:'ac1' }, { tierId:'AB04', currentA:40,  voltageV:230, category:'ac1' },
+  { tierId:'AB05', currentA:63,  voltageV:230, category:'ac1' }, { tierId:'AB06', currentA:100, voltageV:230, category:'ac1' },
+  { tierId:'AB07', currentA:32,  voltageV:400, category:'ac3' }, { tierId:'AB08', currentA:63,  voltageV:400, category:'ac3' },
+  { tierId:'AB09', currentA:100, voltageV:400, category:'ac3' }, { tierId:'AB10', currentA:160, voltageV:400, category:'ac3' },
+]
+export const AC_ISOLATOR_DB: GenericProtectionDevice[] = [
+  { tierId:'AI01', currentA:20,  voltageV:230, category:'ac1' }, { tierId:'AI02', currentA:40,  voltageV:230, category:'ac1' },
+  { tierId:'AI03', currentA:63,  voltageV:230, category:'ac1' }, { tierId:'AI04', currentA:100, voltageV:230, category:'ac1' },
+  { tierId:'AI05', currentA:40,  voltageV:400, category:'ac3' }, { tierId:'AI06', currentA:100, voltageV:400, category:'ac3' },
+  { tierId:'AI07', currentA:200, voltageV:400, category:'ac3' },
+]
+export interface GenericSpd { tierId:string; spdType:string; maxVoltage:number; nominalKa:number; maxKa:number }
+export const DC_SPD_DB: GenericSpd[] = [
+  { tierId:'DS01', spdType:'Type 2', maxVoltage:600,  nominalKa:5,    maxKa:20 },
+  { tierId:'DS02', spdType:'Type 2', maxVoltage:1000, nominalKa:10,   maxKa:40 },
+  { tierId:'DS03', spdType:'Type 1+2 combined', maxVoltage:1000, nominalKa:12.5, maxKa:25 },
+  { tierId:'DS04', spdType:'Type 1+2 combined', maxVoltage:1500, nominalKa:20,   maxKa:40 },
+]
+export const AC_SPD_DB: GenericSpd[] = [
+  { tierId:'AS01', spdType:'Type 2', maxVoltage:275, nominalKa:5,    maxKa:20 },
+  { tierId:'AS02', spdType:'Type 2', maxVoltage:275, nominalKa:10,   maxKa:40 },
+  { tierId:'AS03', spdType:'Type 1+2 combined', maxVoltage:275, nominalKa:12.5, maxKa:25 },
+  { tierId:'AS04', spdType:'Type 1+2 combined', maxVoltage:275, nominalKa:25,   maxKa:50 },
+]
+
+const DESIGN_MARGIN = 1.25 // provisional continuous-current safety margin — see module header note
+
+// ---- Cable derating, from cable_derating_multiplier_table.csv ----
+export interface AmbientDeratingPoint { ambientC:number; insulationTempC:70|90; multiplier:number }
+export const CABLE_DERATING_AMBIENT: AmbientDeratingPoint[] = [
+  { ambientC:10, insulationTempC:70, multiplier:1.22 }, { ambientC:10, insulationTempC:90, multiplier:1.15 },
+  { ambientC:15, insulationTempC:70, multiplier:1.17 }, { ambientC:15, insulationTempC:90, multiplier:1.12 },
+  { ambientC:20, insulationTempC:70, multiplier:1.12 }, { ambientC:20, insulationTempC:90, multiplier:1.08 },
+  { ambientC:25, insulationTempC:70, multiplier:1.06 }, { ambientC:25, insulationTempC:90, multiplier:1.04 },
+  { ambientC:30, insulationTempC:70, multiplier:1 },    { ambientC:30, insulationTempC:90, multiplier:1 },
+  { ambientC:35, insulationTempC:70, multiplier:0.94 }, { ambientC:35, insulationTempC:90, multiplier:0.96 },
+  { ambientC:40, insulationTempC:70, multiplier:0.87 }, { ambientC:40, insulationTempC:90, multiplier:0.91 },
+  { ambientC:45, insulationTempC:70, multiplier:0.79 }, { ambientC:45, insulationTempC:90, multiplier:0.87 },
+  { ambientC:50, insulationTempC:70, multiplier:0.71 }, { ambientC:50, insulationTempC:90, multiplier:0.82 },
+  { ambientC:55, insulationTempC:70, multiplier:0.61 }, { ambientC:55, insulationTempC:90, multiplier:0.76 },
+  { ambientC:60, insulationTempC:70, multiplier:0.5 },  { ambientC:60, insulationTempC:90, multiplier:0.71 },
+  { ambientC:65, insulationTempC:90, multiplier:0.65 }, { ambientC:70, insulationTempC:90, multiplier:0.58 },
+]
+export const CABLE_DERATING_AMBIENT_OPTIONS = [10,15,20,25,30,35,40,45,50,55,60,65,70]
+
+export interface GroupingDeratingPoint { label:string; minCircuits:number; maxCircuits:number; multiplier:number }
+export const CABLE_DERATING_GROUPING: GroupingDeratingPoint[] = [
+  { label:'1 circuit', minCircuits:1, maxCircuits:1, multiplier:1 },
+  { label:'2 circuits', minCircuits:2, maxCircuits:2, multiplier:0.8 },
+  { label:'3 circuits', minCircuits:3, maxCircuits:3, multiplier:0.7 },
+  { label:'4 circuits', minCircuits:4, maxCircuits:4, multiplier:0.65 },
+  { label:'5 circuits', minCircuits:5, maxCircuits:5, multiplier:0.6 },
+  { label:'6 circuits', minCircuits:6, maxCircuits:6, multiplier:0.57 },
+  { label:'7 circuits', minCircuits:7, maxCircuits:7, multiplier:0.54 },
+  { label:'8 circuits', minCircuits:8, maxCircuits:8, multiplier:0.52 },
+  { label:'9 circuits', minCircuits:9, maxCircuits:9, multiplier:0.5 },
+  { label:'10-12 circuits', minCircuits:10, maxCircuits:12, multiplier:0.45 },
+  { label:'13-16 circuits', minCircuits:13, maxCircuits:16, multiplier:0.41 },
+  { label:'17-20 circuits', minCircuits:17, maxCircuits:20, multiplier:0.38 },
+  { label:'20+ circuits', minCircuits:21, maxCircuits:Infinity, multiplier:0.35 },
+]
+
+export interface InstallDeratingPoint { label:string; multiplier:number; note?:string }
+export const CABLE_DERATING_INSTALL: InstallDeratingPoint[] = [
+  { label:'Free air, single cable, spaced', multiplier:1 },
+  { label:'Free air, single cable, touching wall/surface', multiplier:0.95 },
+  { label:'Cable tray, multiple cables, not touching', multiplier:0.9 },
+  { label:'Enclosed conduit, surface-mounted, shaded', multiplier:0.85 },
+  { label:'Enclosed conduit, surface-mounted, unshaded/direct sun', multiplier:0.7, note:'Very common for PV DC home-run conduit on rooftops.' },
+  { label:'Conduit embedded in wall or roof space (poor ventilation)', multiplier:0.65 },
+  { label:'Direct buried in native soil, standard thermal resistivity', multiplier:0.8, note:'Approximation only — a dedicated buried-cable ampacity table technically applies.' },
+  { label:'Underground in duct/conduit', multiplier:0.75, note:'Approximation only — a dedicated buried-cable ampacity table technically applies.' },
+]
+
+export interface DeratingConditions { ambientC:number; groupingCircuits:number; installLabel:string }
+export const DEFAULT_DERATING: DeratingConditions = { ambientC:30, groupingCircuits:1, installLabel:CABLE_DERATING_INSTALL[0].label }
+
+/** Combined derating multiplier for a cable of a given insulation rating under the given site conditions. Falls back to the nearest available ambient point if the exact one isn't tabulated for that insulation class. */
+export function cableDeratingFactor(insulationTempC:70|90, cond:DeratingConditions): number {
+  const ambientPts = CABLE_DERATING_AMBIENT.filter(p=>p.insulationTempC===insulationTempC)
+  const ambient = ambientPts.find(p=>p.ambientC===cond.ambientC)
+    ?? ambientPts.reduce((best,p)=>Math.abs(p.ambientC-cond.ambientC)<Math.abs(best.ambientC-cond.ambientC)?p:best, ambientPts[0])
+  const grouping = CABLE_DERATING_GROUPING.find(g=>cond.groupingCircuits>=g.minCircuits && cond.groupingCircuits<=g.maxCircuits) ?? CABLE_DERATING_GROUPING[0]
+  const install = CABLE_DERATING_INSTALL.find(i=>i.label===cond.installLabel) ?? CABLE_DERATING_INSTALL[0]
+  return Math.round(ambient.multiplier * grouping.multiplier * install.multiplier * 1000) / 1000
+}
+
+function smallestFitting<T extends { currentA?:number }>(db: T[], minCurrent:number, extraFilter?: (t:T)=>boolean): T | null {
+  const pool = extraFilter ? db.filter(extraFilter) : db
+  const fits = pool.filter(t => (t.currentA ?? 0) >= minCurrent).sort((a,b)=>(a.currentA??0)-(b.currentA??0))
+  return fits[0] ?? null
+}
+
+/** Selects the smallest cable whose DERATED ampacity (rated current x ambient x grouping x installation-method multipliers) still covers the design current, per cable_derating_multiplier_table.csv. */
+function smallestFittingCable(db: GenericCable[], minCurrent:number, cond:DeratingConditions, extraFilter?: (c:GenericCable)=>boolean): { cable:GenericCable|null; deratingFactor:number; deratedAmpacityA:number|null } {
+  const pool = extraFilter ? db.filter(extraFilter) : db
+  const withDerating = pool.map(c => ({ c, factor: cableDeratingFactor(c.insulationTempC, cond) }))
+    .map(x => ({ ...x, derated: Math.round(x.c.currentA * x.factor * 100) / 100 }))
+    .filter(x => x.derated >= minCurrent)
+    .sort((a,b) => a.c.currentA - b.c.currentA)
+  if (!withDerating.length) return { cable:null, deratingFactor: pool[0] ? cableDeratingFactor(pool[0].insulationTempC, cond) : 1, deratedAmpacityA: null }
+  return { cable: withDerating[0].c, deratingFactor: withDerating[0].factor, deratedAmpacityA: withDerating[0].derated }
+}
+
+export interface CircuitDesign { designCurrentA:number; cable:GenericCable|null; deratingFactor?:number; deratedAmpacityA?:number|null; protection:GenericProtectionDevice|null; isolator:GenericProtectionDevice|null; fuse?:GenericProtectionDevice|null; spd?:GenericSpd|null; note?:string }
+
+/** Battery-to-inverter DC circuit: current from scenario inverter capacity at the battery's system voltage. */
+export function designBatteryCircuit(inverter: GenericInverter, scenario: PremiumScenario, cond: DeratingConditions = DEFAULT_DERATING): CircuitDesign {
+  const voltMatch = inverter.batteryVoltageVdc.match(/[\d.]+/)
+  const battV = voltMatch ? parseFloat(voltMatch[0]) : 48
+  const designCurrentA = Math.round(((scenario.invSize * 1000) / battV) * DESIGN_MARGIN * 10) / 10
+  const { cable, deratingFactor, deratedAmpacityA } = smallestFittingCable(DC_BATTERY_CABLE_DB, designCurrentA, cond)
+  return {
+    designCurrentA, cable, deratingFactor, deratedAmpacityA,
+    protection: smallestFitting(DC_BREAKER_DB, designCurrentA, d=>d.category==='battery'),
+    isolator: smallestFitting(DC_ISOLATOR_DB, designCurrentA, d=>d.category==='battery'),
+  }
+}
+
+/** PV string + array-combiner DC circuit, from the module's Isc and the chosen string configuration. */
+export function designPvCircuit(module: GenericPvModule, inverter: GenericInverter, pvArray: PvArrayConfigResult, cond: DeratingConditions = DEFAULT_DERATING): CircuitDesign | null {
+  if (!pvArray.feasible || !pvArray.recommended) return null
+  const stringCurrentA = Math.round(module.iscA * DESIGN_MARGIN * 100) / 100
+  const arrayCurrentA = Math.round(module.iscA * pvArray.recommended.parallelCount * DESIGN_MARGIN * 100) / 100
+  const minCableV = inverter.pvVocMaxV
+  const { cable, deratingFactor, deratedAmpacityA } = smallestFittingCable(PV_CABLE_DB, stringCurrentA, cond, c=>c.voltageV>=minCableV)
+  return {
+    designCurrentA: stringCurrentA, cable, deratingFactor, deratedAmpacityA,
+    protection: smallestFitting(DC_BREAKER_DB, arrayCurrentA, d=>d.category==='pv' && d.voltageV>=minCableV),
+    isolator: smallestFitting(DC_ISOLATOR_DB, arrayCurrentA, d=>d.category==='pv' && d.voltageV>=minCableV),
+    fuse: pvArray.recommended.parallelCount > 2 ? smallestFitting(DC_FUSE_DB, stringCurrentA, d=>d.category==='pv') : null,
+    spd: DC_SPD_DB.filter(s=>s.maxVoltage>=minCableV).sort((a,b)=>a.maxVoltage-b.maxVoltage)[0] ?? null,
+    note: pvArray.recommended.parallelCount > 2 ? 'More than 2 parallel strings — individual string fusing recommended.' : undefined,
+  }
+}
+
+/** Inverter AC output circuit, from the selected inverter's kVA rating and the site's phase configuration. */
+export function designAcCircuit(inverter: GenericInverter, phase: SitePhase, cond: DeratingConditions = DEFAULT_DERATING): CircuitDesign {
+  const is3 = Number(phase) === 3
+  const designCurrentA = Math.round((is3 ? (inverter.capacityKva*1000)/(Math.sqrt(3)*400) : (inverter.capacityKva*1000)/230) * DESIGN_MARGIN * 10) / 10
+  const cat = is3 ? 'ac3' : 'ac1'
+  const { cable, deratingFactor, deratedAmpacityA } = smallestFittingCable(AC_CABLE_DB, designCurrentA, cond, c=>c.phaseConfig===(is3?'3':'1'))
+  return {
+    designCurrentA, cable, deratingFactor, deratedAmpacityA,
+    protection: smallestFitting(AC_BREAKER_DB, designCurrentA, d=>d.category===cat),
+    isolator: smallestFitting(AC_ISOLATOR_DB, designCurrentA, d=>d.category===cat),
+    spd: (inverter.capacityKva <= 10 ? AC_SPD_DB[1] : inverter.capacityKva <= 20 ? AC_SPD_DB[2] : AC_SPD_DB[3]) ?? AC_SPD_DB[0],
   }
 }
