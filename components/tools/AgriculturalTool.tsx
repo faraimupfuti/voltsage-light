@@ -85,17 +85,6 @@ export default function AgriculturalTool(){
     {target:'[data-tour="ag-pdf"]',title:'Download your report',body:'Get a branded PDF of your full results — useful to compare against any installer quote.'},
     {target:'[data-tour="ag-cta"]',title:'Want an engineer to take it further?',body:'Request a detailed agricultural design and one of our engineers will follow up. That\'s the full tour — happy sizing!'},
   ]
-  const sendToNetworkDesign=useCallback(()=>{
-    if(!result)return
-    const netRows:{id:number;name:string;qty:number;watts:number;surge:number;from:string;to:string}[]=[]
-    let nid=1
-    rows.forEach(r=>{
-      const w=mode==='advanced'&&r.customKW?r.customKW*1000:r.kw*1000
-      r.periods.forEach(p=>netRows.push({id:nid++,name:r.name,qty:r.qty,watts:w,surge:r.surge??1,from:p.from,to:p.to}))
-    })
-    try{localStorage.setItem('voltsage_network_transfer',JSON.stringify({source:'Agricultural',rows:netRows,psh}))}catch{}
-    window.location.href='/network-design'
-  },[rows,result,mode,psh])
   return(
     <section id="agricultural" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -191,7 +180,6 @@ export default function AgriculturalTool(){
               </div>
               {result&&<div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-xs font-mono text-green-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
               <button onClick={downloadPDF} disabled={!result||pdfBusy} data-tour="ag-pdf" className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
-              {result&&<button onClick={sendToNetworkDesign} className="btn-secondary justify-center">Continue to Network Design →</button>}
               </LeadLock>
               <a href="#contact" data-tour="ag-cta" className="btn-teal justify-center"><Zap size={13}/> {t.toolsCommon.requestAgDesign}</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Inverter sized at 1.3× peak running demand to nearest standard size. Final design must be verified by a qualified engineer before installation.</p>
