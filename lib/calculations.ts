@@ -680,3 +680,106 @@ export function recommendSwitching(site: SiteSupplyOption, phase: SitePhase, inv
     avsWarning: req.gridInvolved ? 'AVS units are a budget automatic-switching option, but are not always a verified break-before-make design — where the grid is one of the sources, a certified ATS or a mechanically-interlocked manual changeover is the safer choice to avoid backfeeding a line utility workers may assume is dead.' : undefined,
   }
 }
+
+// ============================================================
+// Earthing & RCD — DRAFT / PROVISIONAL
+// protection_database_notes.txt explicitly lists earthing/grounding sizing
+// and RCD/ELCB protection as "not covered by any table so far" — there is
+// no VoltSage-provided earthing database or methodology yet, generic or
+// otherwise. Rather than leaving this stage blank, the sizing below uses
+// IEC 60364-5-54 Table 54.2's public, widely-used minimum protective-
+// conductor cross-section rule (Spe = Sph up to 16mm2, 16mm2 flat between
+// 16-35mm2, Sph/2 above 35mm2), and a standard 30mA residual-current
+// device convention for final AC circuits (IEC 60364-4-41). Same caveat
+// as the rest of the Electrical Design section: this is a placeholder for
+// engineering review, not a VoltSage-specified deliverable, and does not
+// touch earth electrode resistance (soil-dependent, needs a site test).
+// ============================================================
+
+/** IEC 60364-5-54 Table 54.2 minimum protective-conductor cross-section rule, applied to whichever conductor a given circuit's protective/bonding conductor runs alongside. */
+export function protectiveConductorCsaMm2(phaseCsaMm2: number): number {
+  if (phaseCsaMm2 <= 16) return phaseCsaMm2
+  if (phaseCsaMm2 <= 35) return 16
+  return Math.round((phaseCsaMm2 / 2) * 10) / 10
+}
+
+export interface EarthingPoint { label:string; basedOnCsaMm2:number|null; conductorCsaMm2:number|null; note:string }
+export interface EarthingDesign { points:EarthingPoint[]; rcd:{ratingMa:number; type:string; note:string} }
+
+/**
+ * Assembles the draft earthing/bonding conductor recommendation for a
+ * scenario's three DC/AC circuits, plus a standard RCD recommendation for
+ * the AC output. Any circuit without a selected cable is skipped rather
+ * than guessed.
+ */
+export function designEarthing(battCircuit: CircuitDesign|null, pvCircuit: CircuitDesign|null, acCircuit: CircuitDesign|null): EarthingDesign {
+  const points: EarthingPoint[] = []
+  if (battCircuit?.cable) points.push({ label:'Battery bank equipment earth / bonding', basedOnCsaMm2:battCircuit.cable.mm2, conductorCsaMm2:protectiveConductorCsaMm2(battCircuit.cable.mm2), note:'Bonds the battery enclosure/rack to the main earthing system.' })
+  if (pvCircuit?.cable) points.push({ label:'PV array frame bonding', basedOnCsaMm2:pvCircuit.cable.mm2, conductorCsaMm2:protectiveConductorCsaMm2(pvCircuit.cable.mm2), note:'Bonds module frames and mounting structure — separate from the DC negative/positive conductors.' })
+  if (acCircuit?.cable) points.push({ label:'AC output protective earth (PE)', basedOnCsaMm2:acCircuit.cable.mm2, conductorCsaMm2:protectiveConductorCsaMm2(acCircuit.cable.mm2), note:'Runs with the AC output cable back to the distribution board earth bar.' })
+  return {
+    points,
+    rcd: { ratingMa:30, type:'Type A (or Type B if the inverter datasheet specifies DC leakage current — confirm with manufacturer)',
+      note:'30mA residual-current protection is standard practice for final AC circuits feeding socket outlets or the inverter output; exact type depends on the selected inverter\'s earth-leakage characteristics.' },
+  }
+}
+
+// ============================================================
+// Bill of Quantities — assembled from the same single-source-of-truth
+// selections (inverter, battery option, PV module/string config, circuit
+// designs, switching, earthing) already computed for a scenario. Cable
+// quantities are per "run" (one continuous conductor set) since exact
+// lengths depend on physical site layout, not equipment data — flagged in
+// each row rather than guessed.
+// ============================================================
+
+export interface BoqRow { category:string; item:string; spec:string; qty:number; unit:string }
+
+export function buildScenarioBOQ(opts: {
+  inverter: GenericInverter
+  battOpt: BatteryModuleOption | null
+  pvModule: GenericPvModule | null
+  pvArray: PvArrayConfigResult | null
+  battCircuit: CircuitDesign | null
+  pvCircuit: CircuitDesign | null
+  acCircuit: CircuitDesign | null
+  switching: SwitchingRecommendation | null
+  earthing: EarthingDesign | null
+}): BoqRow[] {
+  const rows: BoqRow[] = []
+  const { inverter, battOpt, pvModule, pvArray, battCircuit, pvCircuit, acCircuit, switching, earthing } = opts
+
+  rows.push({ category:'Generation & Storage', item:`Inverter — ${inverter.tierId}`, spec:`${inverter.capacityKva} kVA / ${inverter.capacityKwCont} kW cont., ${inverter.phases}-phase`, qty:1, unit:'unit' })
+  if (battOpt) rows.push({ category:'Generation & Storage', item:`Battery module — ${battOpt.tierId}`, spec:`${battOpt.chemistry}, ${battOpt.moduleKwh} kWh/module → ${battOpt.resultingKwh} kWh total`, qty:battOpt.modules, unit:'module' })
+  if (pvModule && pvArray?.feasible) rows.push({ category:'Generation & Storage', item:`PV module — ${pvModule.tierId}`, spec:`${pvModule.ratedPowerW}W ${pvModule.technology}, ${pvArray.recommended?.seriesCount}S×${pvArray.recommended?.parallelCount}P`, qty:pvArray.panelCount, unit:'module' })
+
+  if (battCircuit) {
+    if (battCircuit.cable) rows.push({ category:'Conductors', item:`DC battery cable — ${battCircuit.cable.tierId}`, spec:`${battCircuit.cable.mm2}mm², ${battCircuit.designCurrentA}A design current`, qty:1, unit:'run (length TBC on site survey)' })
+    if (battCircuit.protection) rows.push({ category:'Protection & Isolation', item:`DC battery breaker — ${battCircuit.protection.tierId}`, spec:`${battCircuit.protection.currentA}A, ${battCircuit.protection.voltageV}Vdc`, qty:1, unit:'unit' })
+    if (battCircuit.isolator) rows.push({ category:'Protection & Isolation', item:`DC battery isolator — ${battCircuit.isolator.tierId}`, spec:`${battCircuit.isolator.currentA}A, ${battCircuit.isolator.voltageV}Vdc`, qty:1, unit:'unit' })
+  }
+  if (pvCircuit && pvArray?.recommended) {
+    const strings = pvArray.recommended.parallelCount
+    if (pvCircuit.cable) rows.push({ category:'Conductors', item:`PV string cable — ${pvCircuit.cable.tierId}`, spec:`${pvCircuit.cable.mm2}mm², ${pvCircuit.designCurrentA}A per string`, qty:strings, unit:'run (length TBC on site survey)' })
+    if (pvCircuit.protection) rows.push({ category:'Protection & Isolation', item:`DC PV array breaker — ${pvCircuit.protection.tierId}`, spec:`${pvCircuit.protection.currentA}A, ${pvCircuit.protection.voltageV}Vdc`, qty:1, unit:'unit' })
+    if (pvCircuit.isolator) rows.push({ category:'Protection & Isolation', item:`DC PV isolator — ${pvCircuit.isolator.tierId}`, spec:`${pvCircuit.isolator.currentA}A, ${pvCircuit.isolator.voltageV}Vdc`, qty:1, unit:'unit' })
+    if (pvCircuit.fuse) rows.push({ category:'Protection & Isolation', item:`PV string fuse — ${pvCircuit.fuse.tierId}`, spec:`${pvCircuit.fuse.currentA}A`, qty:strings, unit:'unit' })
+    if (pvCircuit.spd) rows.push({ category:'Protection & Isolation', item:`DC surge protection — ${pvCircuit.spd.tierId}`, spec:`${pvCircuit.spd.spdType}, ${pvCircuit.spd.maxVoltage}Vdc`, qty:1, unit:'unit' })
+  }
+  if (acCircuit) {
+    if (acCircuit.cable) rows.push({ category:'Conductors', item:`AC output cable — ${acCircuit.cable.tierId}`, spec:`${acCircuit.cable.mm2}mm² × ${acCircuit.cable.cores} core, ${acCircuit.designCurrentA}A design current`, qty:1, unit:'run (length TBC on site survey)' })
+    if (acCircuit.protection) rows.push({ category:'Protection & Isolation', item:`AC output breaker — ${acCircuit.protection.tierId}`, spec:`${acCircuit.protection.currentA}A, ${acCircuit.protection.voltageV}Vac`, qty:1, unit:'unit' })
+    if (acCircuit.isolator) rows.push({ category:'Protection & Isolation', item:`AC output isolator — ${acCircuit.isolator.tierId}`, spec:`${acCircuit.isolator.currentA}A, ${acCircuit.isolator.voltageV}Vac`, qty:1, unit:'unit' })
+    if (acCircuit.spd) rows.push({ category:'Protection & Isolation', item:`AC surge protection — ${acCircuit.spd.tierId}`, spec:`${acCircuit.spd.spdType}, ${acCircuit.spd.maxVoltage}Vac`, qty:1, unit:'unit' })
+  }
+  if (switching?.needed) {
+    const chosen = switching.ats ?? switching.manual ?? switching.avs
+    const kind = switching.ats ? `Automatic transfer switch — ${switching.ats.tierId}` : switching.manual ? `Manual changeover switch — ${switching.manual.tierId}` : switching.avs ? `AVS — ${switching.avs.tierId}` : null
+    if (chosen && kind) rows.push({ category:'Switching & Source Management', item:kind, spec:`${chosen.currentA}A, ${chosen.voltageV}Vac, ${switching.sources}-source`, qty:1, unit:'unit' })
+  }
+  if (earthing?.points.length) {
+    earthing.points.forEach(p => rows.push({ category:'Earthing', item:p.label, spec:`${p.conductorCsaMm2}mm² protective/bonding conductor`, qty:1, unit:'run (length TBC on site survey)' }))
+    rows.push({ category:'Earthing', item:`RCD — ${earthing.rcd.ratingMa}mA`, spec:earthing.rcd.type, qty:1, unit:'unit' })
+  }
+  return rows
+}
