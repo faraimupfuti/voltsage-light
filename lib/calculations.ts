@@ -44,3 +44,55 @@ export function calculateAgriculturalSizing(rows:AgEquipmentRow[],mode:'standard
   const pv=Math.ceil(((Ey+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
   return{Ed_kWh:Ed,Enight_kWh:En,Eday_kWh:Ey,Peak_kW:Pk,Surge_kW:Sk,invSize:inv,CbattRounded:Cb,PpvRounded:pv,panelCount:Math.ceil(pv*1000/pWp),autonomyHours:ah,profile:p,catTotalsWh:{}}
 }
+
+export type SitePhase='1'|'3'
+export type SiteSupplyOption='no_supply'|'grid_reliable'|'grid_unreliable'|'generator_only'
+export interface SiteSupplyOptionMeta{id:SiteSupplyOption;label:string;body:string}
+export const SITE_SUPPLY_OPTIONS:SiteSupplyOptionMeta[]=[{id:'no_supply',label:'No Grid Supply',body:'Off-grid site — the system must cover the full load independently, with no utility connection.'},{id:'grid_reliable',label:'Reliable Grid',body:'Grid power is stable, with only occasional short outages.'},{id:'grid_unreliable',label:'Unreliable Grid / Load Shedding',body:'Grid power is available but frequently interrupted for extended periods.'},{id:'generator_only',label:'Generator Only',body:'The site currently relies on a diesel or petrol generator as its main source.'}]
+
+export type EnergyGoal='backup_power'|'load_shift'|'bill_reduction'|'independence_export'|'independence_no_export'|'generator_replacement'
+export interface EnergyGoalMeta{id:EnergyGoal;label:string;body:string}
+export const ENERGY_GOALS:EnergyGoalMeta[]=[{id:'backup_power',label:'Backup Power',body:'Keep essential loads running through grid or generator outages.'},{id:'load_shift',label:'Load Shifting',body:'Shift consumption away from peak or expensive tariff periods.'},{id:'bill_reduction',label:'Bill Reduction',body:'Lower the monthly electricity bill by offsetting grid usage with solar.'},{id:'independence_export',label:'Energy Independence (Export)',body:'Maximise self-generation and export any surplus back to the grid.'},{id:'independence_no_export',label:'Energy Independence (No Export)',body:'Maximise self-generation without exporting any surplus to the grid.'},{id:'generator_replacement',label:'Generator Replacement',body:'Replace or substantially reduce reliance on a diesel or petrol generator.'}]
+
+export const GOAL_ELIGIBILITY:Record<SiteSupplyOption,EnergyGoal[]>={no_supply:['independence_export','independence_no_export'],grid_reliable:['bill_reduction','load_shift','independence_export','independence_no_export'],grid_unreliable:['backup_power','bill_reduction','load_shift','independence_export','independence_no_export'],generator_only:['backup_power','generator_replacement','independence_export','independence_no_export']}
+export const CONDITIONAL_GOALS:Record<SiteSupplyOption,EnergyGoal[]>={no_supply:[],grid_reliable:['independence_export'],grid_unreliable:['independence_export'],generator_only:['independence_export']}
+
+export interface NetworkLoadRow{id:number;name:string;qty:number;watts:number;surge:number;from:string;to:string}
+export function calculateNetworkLoadProfile(rows:NetworkLoadRow[],psh:number,autonomy=8,dod=0.8,bEff=0.95,cEff=0.85,mu=0.75,pWp=550):SizingResult{
+  const S=48,H=0.5,p=new Array<number>(S).fill(0);let Ew=0,En=0,Ed=0;const cats:Record<string,number>={}
+  rows.forEach(r=>{const h=timeToHours(r.from,r.to),nh=nightHoursForPeriod(r.from,r.to);Ew+=r.qty*r.watts*h;En+=r.qty*r.watts*nh;Ed+=r.qty*r.watts*(h-nh);const key=r.name||'Load';cats[key]=(cats[key]??0)+r.qty*r.watts*h;const{start,end}=periodRange(r.from,r.to);for(let s=0;s<S;s++)if(isActiveAtSlot(s*H,start,end))p[s]+=r.qty*r.watts})
+  let Pm=0,tm=0;p.forEach((w,s)=>{if(w>Pm){Pm=w;tm=s}});const tM=tm*H;let se=0
+  rows.forEach(r=>{if(r.surge<=1)return;const{start,end}=periodRange(r.from,r.to);if(isActiveAtSlot(tM,start,end))se+=r.qty*r.watts*(r.surge-1)})
+  const Ek=Ew/1000,Nk=En/1000,Dk=Ed/1000,Pk=Pm/1000,Sk=(Pm+se)/1000
+  const inv=roundUpToStandardInverter(Pk*1.3),Cb=Math.ceil((Nk>0?(Nk*autonomy)/(dod*bEff):0)*2)/2
+  const ah=Nk/12>0?(Cb*dod*bEff)/(Nk/12):0,pv=Math.ceil(((Dk+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
+  return{Ed_kWh:Ek,Enight_kWh:Nk,Eday_kWh:Dk,Peak_kW:Pk,Surge_kW:Sk,invSize:inv,CbattRounded:Cb,PpvRounded:pv,panelCount:Math.ceil(pv*1000/pWp),autonomyHours:ah,profile:p,catTotalsWh:cats}
+}
+
+export interface PremiumScenario{goal:EnergyGoal;invSize:number;surge:number;battery:number;pv:number}
+const GOAL_ADJUSTMENTS:Record<EnergyGoal,{invMult:number;battMult:number;pvMult:number}>={backup_power:{invMult:1.0,battMult:1.5,pvMult:1.0},load_shift:{invMult:1.0,battMult:1.25,pvMult:1.1},bill_reduction:{invMult:1.0,battMult:1.0,pvMult:1.3},independence_export:{invMult:1.1,battMult:1.2,pvMult:1.6},independence_no_export:{invMult:1.1,battMult:1.8,pvMult:1.8},generator_replacement:{invMult:1.2,battMult:1.6,pvMult:1.2}}
+export function calculatePremiumScenarios(baseline:SizingResult,goals:EnergyGoal[]):PremiumScenario[]{
+  return goals.map(goal=>{const adj=GOAL_ADJUSTMENTS[goal];return{goal,invSize:baseline.invSize*adj.invMult,surge:baseline.Surge_kW*adj.invMult,battery:baseline.CbattRounded*adj.battMult,pv:baseline.PpvRounded*adj.pvMult}})
+}
+
+export interface InverterTier{tierId:string;capacityKva:number;capacityKwCont:number;surgeWithstandKva:number;batteryVoltageVdc:number;maxPvKwp:number;phase:SitePhase[]}
+export const INVERTER_TIERS:InverterTier[]=[{tierId:'INV-3K',capacityKva:3,capacityKwCont:3,surgeWithstandKva:6,batteryVoltageVdc:48,maxPvKwp:4.5,phase:['1']},{tierId:'INV-5K',capacityKva:5,capacityKwCont:5,surgeWithstandKva:10,batteryVoltageVdc:48,maxPvKwp:7.5,phase:['1']},{tierId:'INV-8K',capacityKva:8,capacityKwCont:8,surgeWithstandKva:16,batteryVoltageVdc:48,maxPvKwp:12,phase:['1']},{tierId:'INV-10K',capacityKva:10,capacityKwCont:10,surgeWithstandKva:20,batteryVoltageVdc:100,maxPvKwp:15,phase:['1','3']},{tierId:'INV-15K',capacityKva:15,capacityKwCont:15,surgeWithstandKva:30,batteryVoltageVdc:100,maxPvKwp:22,phase:['3']},{tierId:'INV-20K',capacityKva:20,capacityKwCont:20,surgeWithstandKva:40,batteryVoltageVdc:200,maxPvKwp:30,phase:['3']},{tierId:'INV-30K',capacityKva:30,capacityKwCont:30,surgeWithstandKva:60,batteryVoltageVdc:200,maxPvKwp:45,phase:['3']},{tierId:'INV-50K',capacityKva:50,capacityKwCont:50,surgeWithstandKva:100,batteryVoltageVdc:400,maxPvKwp:75,phase:['3']}]
+export interface InverterSelection{inverter:InverterTier|null;reason?:string}
+export function selectInverter(sc:PremiumScenario,phase:SitePhase):InverterSelection{
+  const candidates=INVERTER_TIERS.filter(t=>t.phase.includes(phase)&&t.capacityKwCont>=sc.invSize&&t.surgeWithstandKva>=sc.surge)
+  if(candidates.length===0)return{inverter:null,reason:`No inverter in the database matches ${sc.invSize.toFixed(1)} kW continuous / ${sc.surge.toFixed(1)} kW surge on ${phase==='1'?'single':'three'}-phase supply — this requires a custom engineered solution.`}
+  return{inverter:candidates.reduce((a,b)=>a.capacityKwCont<=b.capacityKwCont?a:b)}
+}
+
+export interface BatteryModule{tierId:string;chemistry:string;voltageVdc:number;kwh:number}
+export const BATTERY_MODULES:BatteryModule[]=[{tierId:'BATT-48-5',chemistry:'LiFePO4',voltageVdc:48,kwh:5.12},{tierId:'BATT-48-10',chemistry:'LiFePO4',voltageVdc:48,kwh:10.24},{tierId:'BATT-100-15',chemistry:'LiFePO4',voltageVdc:100,kwh:15},{tierId:'BATT-200-20',chemistry:'LiFePO4',voltageVdc:200,kwh:20},{tierId:'BATT-400-30',chemistry:'LiFePO4',voltageVdc:400,kwh:30}]
+export interface BatteryModuleOption{tierId:string;chemistry:string;modules:number;moduleKwh:number;resultingKwh:number}
+export function getBatteryModuleOptions(inverter:InverterTier,sc:PremiumScenario):BatteryModuleOption[]{
+  return BATTERY_MODULES.filter(m=>m.voltageVdc===inverter.batteryVoltageVdc).map(m=>{const modules=Math.max(1,Math.ceil(sc.battery/m.kwh));return{tierId:m.tierId,chemistry:m.chemistry,modules,moduleKwh:m.kwh,resultingKwh:Math.round(modules*m.kwh*100)/100}})
+}
+
+export interface PvCompatibilityResult{ok:boolean;message:string}
+export function checkPvCompatibility(sc:PremiumScenario,inverter:InverterTier):PvCompatibilityResult{
+  if(sc.pv<=inverter.maxPvKwp)return{ok:true,message:`${sc.pv.toFixed(2)} kWp PV array fits within the ${inverter.tierId} PV input limit (${inverter.maxPvKwp} kWp).`}
+  return{ok:false,message:`${sc.pv.toFixed(2)} kWp PV array exceeds the ${inverter.tierId} PV input limit (${inverter.maxPvKwp} kWp) — a larger inverter or split-array design is needed.`}
+}
