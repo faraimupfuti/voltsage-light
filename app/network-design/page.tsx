@@ -11,6 +11,7 @@ import {
   calculatePremiumScenarios, selectInverter, getBatteryModuleOptions, checkPvCompatibility,
   PV_MODULE_DB, findPvModule, calculatePvArrayConfig,
   designBatteryCircuit, designPvCircuit, designAcCircuit, CircuitDesign,
+  recommendSwitching, SwitchingRecommendation,
   DeratingConditions, DEFAULT_DERATING, CABLE_DERATING_AMBIENT_OPTIONS, CABLE_DERATING_GROUPING, CABLE_DERATING_INSTALL,
   PSH_TABLE, findPSH,
 } from '@/lib/calculations'
@@ -40,8 +41,49 @@ function CircuitCard({title,circuit}:{title:string;circuit:CircuitDesign|null}){
         <div><span className="block text-ink-faint text-[9px] uppercase">Isolator</span><span className="text-ink">{circuit.isolator?`${circuit.isolator.tierId} (${circuit.isolator.currentA}A)`:'—'}</span></div>
         <div><span className="block text-ink-faint text-[9px] uppercase">{circuit.fuse!==undefined?'Fuse':circuit.spd?'SPD':''}</span><span className="text-ink">{circuit.fuse?`${circuit.fuse.tierId} (${circuit.fuse.currentA}A)`:circuit.spd?`${circuit.spd.tierId} (${circuit.spd.spdType})`:circuit.fuse===null?'Not required':'—'}</span></div>
       </div>
+      {circuit.protectionExceedsCable && <div className="mt-2 text-[11px] text-red-500">Selected protection device ({circuit.protection?.currentA}A) exceeds this cable's derated ampacity ({circuit.deratedAmpacityA}A) — the cable needs upsizing, not the breaker downsizing, per the "protect the cable" rule.</div>}
       {!circuit.cable && <div className="mt-2 text-[11px] text-red-500">No database cable rated for this current — exceeds largest generic tier, needs a manufacturer-specific or paralleled-conductor design.</div>}
       {circuit.note && <div className="mt-2 text-[11px] text-amber-600">{circuit.note}</div>}
+    </div>
+  )
+}
+
+function SwitchingCard({switching}:{switching:SwitchingRecommendation|null}){
+  if(!switching) return null
+  if(!switching.needed){
+    return (
+      <div className="rounded-lg border border-surface-border bg-surface-subtle p-3">
+        <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">Source switching</div>
+        <div className="text-xs font-mono text-ink-muted">{switching.reason}</div>
+      </div>
+    )
+  }
+  return (
+    <div className="rounded-lg border border-surface-border bg-surface-subtle p-3">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">Source switching</span>
+        <span className="text-[10px] font-mono text-ink-faint">{switching.designCurrentA} A design current</span>
+      </div>
+      <div className="text-[11px] font-mono text-ink-muted mb-2">{switching.reason}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+        <div className="bg-white rounded-md p-2 border border-surface-border">
+          <span className="block text-ink-faint text-[9px] uppercase">Manual changeover</span>
+          <span className="text-ink">{switching.manual?`${switching.manual.tierId} (${switching.manual.currentA}A)`:'No fitting tier'}</span>
+        </div>
+        <div className="bg-white rounded-md p-2 border border-surface-border">
+          <span className="block text-ink-faint text-[9px] uppercase">Automatic — ATS (certified)</span>
+          <span className="text-ink">{switching.ats?`${switching.ats.tierId} (${switching.ats.currentA}A, ${switching.ats.transferTimeS}s)`:'No fitting tier'}</span>
+        </div>
+        <div className="bg-white rounded-md p-2 border border-surface-border">
+          <span className="block text-ink-faint text-[9px] uppercase">Automatic — AVS (budget)</span>
+          <span className="text-ink">{switching.avs?`${switching.avs.tierId} (${switching.avs.currentA}A, ${switching.avs.transferTimeS}s)`:'No fitting tier'}</span>
+        </div>
+      </div>
+      {switching.avsCaution && switching.avsWarning && (
+        <div className="flex items-start gap-2 mt-2 px-2.5 py-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-700">
+          <AlertTriangle size={12} className="flex-shrink-0 mt-0.5"/> {switching.avsWarning}
+        </div>
+      )}
     </div>
   )
 }
@@ -292,6 +334,7 @@ export default function NetworkDesignPage(){
                         const battCircuit=invRes.inverter?designBatteryCircuit(invRes.inverter,sc,derating):null
                         const pvCircuit=(invRes.inverter&&selMod&&pvArray)?designPvCircuit(selMod,invRes.inverter,pvArray,derating):null
                         const acCircuit=invRes.inverter?designAcCircuit(invRes.inverter,phase,derating):null
+                        const switching=(invRes.inverter&&site)?recommendSwitching(site,phase,invRes.inverter):null
                         return (
                           <div key={sc.goal} className="rounded-2xl border-2 border-brand-orange bg-brand-orange/5 p-5">
                             <div className="flex items-center gap-2 mb-4">
@@ -415,6 +458,7 @@ export default function NetworkDesignPage(){
                                     <CircuitCard title="Battery ↔ Inverter DC" circuit={battCircuit}/>
                                     {pvCheck?.ok && pvArray?.feasible && <CircuitCard title="PV String / Array DC" circuit={pvCircuit}/>}
                                     <CircuitCard title={`Inverter AC Output (${phase}-phase)`} circuit={acCircuit}/>
+                                    <SwitchingCard switching={switching}/>
                                   </div>
                                   <p className="text-[10px] text-ink-faint mt-2 leading-relaxed">Provisional sizing using a standard 1.25× continuous-current margin and ambient/grouping/installation-method derating from the generic cable derating table — not yet cross-checked against VoltSage's formal Electrical Design Specification. For engineering review only.</p>
                                 </div>

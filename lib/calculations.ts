@@ -538,7 +538,12 @@ function smallestFittingCable(db: GenericCable[], minCurrent:number, cond:Derati
   return { cable: withDerating[0].c, deratingFactor: withDerating[0].factor, deratedAmpacityA: withDerating[0].derated }
 }
 
-export interface CircuitDesign { designCurrentA:number; cable:GenericCable|null; deratingFactor?:number; deratedAmpacityA?:number|null; protection:GenericProtectionDevice|null; isolator:GenericProtectionDevice|null; fuse?:GenericProtectionDevice|null; spd?:GenericSpd|null; note?:string }
+export interface CircuitDesign { designCurrentA:number; cable:GenericCable|null; deratingFactor?:number; deratedAmpacityA?:number|null; protection:GenericProtectionDevice|null; protectionExceedsCable?:boolean; isolator:GenericProtectionDevice|null; fuse?:GenericProtectionDevice|null; spd?:GenericSpd|null; note?:string }
+
+/** Per protection_database_notes.txt's "core selection rule": a breaker/fuse protects the cable, so it must never be rated above the cable's derated ampacity — that combination means the cable needs upsizing, not a bigger breaker. */
+function exceedsCable(protection: GenericProtectionDevice|null, deratedAmpacityA: number|null|undefined): boolean {
+  return !!protection && deratedAmpacityA != null && protection.currentA > deratedAmpacityA
+}
 
 /** Battery-to-inverter DC circuit: current from scenario inverter capacity at the battery's system voltage. */
 export function designBatteryCircuit(inverter: GenericInverter, scenario: PremiumScenario, cond: DeratingConditions = DEFAULT_DERATING): CircuitDesign {
@@ -546,9 +551,10 @@ export function designBatteryCircuit(inverter: GenericInverter, scenario: Premiu
   const battV = voltMatch ? parseFloat(voltMatch[0]) : 48
   const designCurrentA = Math.round(((scenario.invSize * 1000) / battV) * DESIGN_MARGIN * 10) / 10
   const { cable, deratingFactor, deratedAmpacityA } = smallestFittingCable(DC_BATTERY_CABLE_DB, designCurrentA, cond)
+  const protection = smallestFitting(DC_BREAKER_DB, designCurrentA, d=>d.category==='battery')
   return {
-    designCurrentA, cable, deratingFactor, deratedAmpacityA,
-    protection: smallestFitting(DC_BREAKER_DB, designCurrentA, d=>d.category==='battery'),
+    designCurrentA, cable, deratingFactor, deratedAmpacityA, protection,
+    protectionExceedsCable: exceedsCable(protection, deratedAmpacityA),
     isolator: smallestFitting(DC_ISOLATOR_DB, designCurrentA, d=>d.category==='battery'),
   }
 }
@@ -560,12 +566,14 @@ export function designPvCircuit(module: GenericPvModule, inverter: GenericInvert
   const arrayCurrentA = Math.round(module.iscA * pvArray.recommended.parallelCount * DESIGN_MARGIN * 100) / 100
   const minCableV = inverter.pvVocMaxV
   const { cable, deratingFactor, deratedAmpacityA } = smallestFittingCable(PV_CABLE_DB, stringCurrentA, cond, c=>c.voltageV>=minCableV)
+  const protection = smallestFitting(DC_BREAKER_DB, arrayCurrentA, d=>d.category==='pv' && d.voltageV>=minCableV)
   return {
-    designCurrentA: stringCurrentA, cable, deratingFactor, deratedAmpacityA,
-    protection: smallestFitting(DC_BREAKER_DB, arrayCurrentA, d=>d.category==='pv' && d.voltageV>=minCableV),
+    designCurrentA: stringCurrentA, cable, deratingFactor, deratedAmpacityA, protection,
+    protectionExceedsCable: exceedsCable(protection, deratedAmpacityA),
     isolator: smallestFitting(DC_ISOLATOR_DB, arrayCurrentA, d=>d.category==='pv' && d.voltageV>=minCableV),
     fuse: pvArray.recommended.parallelCount > 2 ? smallestFitting(DC_FUSE_DB, stringCurrentA, d=>d.category==='pv') : null,
-    spd: DC_SPD_DB.filter(s=>s.maxVoltage>=minCableV).sort((a,b)=>a.maxVoltage-b.maxVoltage)[0] ?? null,
+    spd: DC_SPD_DB.filter(s=>s.maxVoltage>=minCableV && s.spdType.startsWith('Type 1+2')).sort((a,b)=>a.maxVoltage-b.maxVoltage)[0]
+      ?? DC_SPD_DB.filter(s=>s.maxVoltage>=minCableV).sort((a,b)=>a.maxVoltage-b.maxVoltage)[0] ?? null,
     note: pvArray.recommended.parallelCount > 2 ? 'More than 2 parallel strings — individual string fusing recommended.' : undefined,
   }
 }
@@ -576,10 +584,99 @@ export function designAcCircuit(inverter: GenericInverter, phase: SitePhase, con
   const designCurrentA = Math.round((is3 ? (inverter.capacityKva*1000)/(Math.sqrt(3)*400) : (inverter.capacityKva*1000)/230) * DESIGN_MARGIN * 10) / 10
   const cat = is3 ? 'ac3' : 'ac1'
   const { cable, deratingFactor, deratedAmpacityA } = smallestFittingCable(AC_CABLE_DB, designCurrentA, cond, c=>c.phaseConfig===(is3?'3':'1'))
+  const protection = smallestFitting(AC_BREAKER_DB, designCurrentA, d=>d.category===cat)
   return {
-    designCurrentA, cable, deratingFactor, deratedAmpacityA,
-    protection: smallestFitting(AC_BREAKER_DB, designCurrentA, d=>d.category===cat),
+    designCurrentA, cable, deratingFactor, deratedAmpacityA, protection,
+    protectionExceedsCable: exceedsCable(protection, deratedAmpacityA),
     isolator: smallestFitting(AC_ISOLATOR_DB, designCurrentA, d=>d.category===cat),
     spd: (inverter.capacityKva <= 10 ? AC_SPD_DB[1] : inverter.capacityKva <= 20 ? AC_SPD_DB[2] : AC_SPD_DB[3]) ?? AC_SPD_DB[0],
+  }
+}
+
+// ============================================================
+// Switching / Source Management — Manual Changeover, ATS, AVS
+// Section 2 category (iv). Seeded from manual_changeover_switch_database_
+// generic.csv, ac_ats_database_generic.csv and ac_avs_database_generic.csv
+// (the latter two corrected — the source files had their transfer-time
+// ranges Excel-mangled into dates, e.g. "1-3" -> "1-Mar").
+// Selection guidance (site sources, AVS backfeed caveat) follows
+// protection_database_notes.txt's Manual/ATS/AVS section directly.
+// ============================================================
+
+export interface GenericSwitch { tierId:string; currentA:number; voltageV:number; poles:string; numberOfSources?:string; transferTimeS:string }
+export const MANUAL_CHANGEOVER_DB: GenericSwitch[] = [
+  { tierId:'MC01', currentA:32,  voltageV:230, poles:'1P', transferTimeS:'Manual (instant on operation)' },
+  { tierId:'MC02', currentA:63,  voltageV:230, poles:'1P', transferTimeS:'Manual (instant on operation)' },
+  { tierId:'MC03', currentA:100, voltageV:230, poles:'1P', transferTimeS:'Manual (instant on operation)' },
+  { tierId:'MC04', currentA:63,  voltageV:400, poles:'3P', transferTimeS:'Manual (instant on operation)' },
+  { tierId:'MC05', currentA:100, voltageV:400, poles:'3P', transferTimeS:'Manual (instant on operation)' },
+  { tierId:'MC06', currentA:200, voltageV:400, poles:'3P', transferTimeS:'Manual (instant on operation)' },
+]
+export const AC_ATS_DB: GenericSwitch[] = [
+  { tierId:'AT01', currentA:32,  voltageV:230, poles:'1P', numberOfSources:'2',      transferTimeS:'1-3' },
+  { tierId:'AT02', currentA:63,  voltageV:230, poles:'1P', numberOfSources:'2',      transferTimeS:'1-3' },
+  { tierId:'AT03', currentA:100, voltageV:230, poles:'1P', numberOfSources:'2 or 3', transferTimeS:'1-3' },
+  { tierId:'AT04', currentA:63,  voltageV:400, poles:'3P', numberOfSources:'2',      transferTimeS:'1-3' },
+  { tierId:'AT05', currentA:100, voltageV:400, poles:'3P', numberOfSources:'2 or 3', transferTimeS:'1-3' },
+  { tierId:'AT06', currentA:200, voltageV:400, poles:'3P', numberOfSources:'2 or 3', transferTimeS:'1-3' },
+]
+export const AC_AVS_DB: GenericSwitch[] = [
+  { tierId:'AV01', currentA:30,  voltageV:230, poles:'1P', transferTimeS:'5-10' },
+  { tierId:'AV02', currentA:63,  voltageV:230, poles:'1P', transferTimeS:'5-10' },
+  { tierId:'AV03', currentA:100, voltageV:230, poles:'1P', transferTimeS:'5-10' },
+  { tierId:'AV04', currentA:63,  voltageV:400, poles:'3P', transferTimeS:'5-10' },
+  { tierId:'AV05', currentA:100, voltageV:400, poles:'3P', transferTimeS:'5-10' },
+]
+
+export interface SwitchingRequirement { needed:boolean; sources:number; gridInvolved:boolean; generatorInvolved:boolean; reason:string }
+
+/**
+ * Determines whether AC transfer/changeover switching is required for a
+ * site, and how many sources it must arbitrate. Only external AC sources
+ * (grid, generator) need switching against the new inverter's output —
+ * an existing solar system shares the AC/DC bus rather than being
+ * switched, and a site with no existing supply or solar-only has nothing
+ * external to transfer between.
+ */
+export function determineSwitchingRequirement(site: SiteSupplyOption): SwitchingRequirement {
+  const gridInvolved = ['grid_only','grid_generator','solar_grid','solar_grid_generator'].includes(site)
+  const generatorInvolved = ['grid_generator','generator_only','solar_generator','solar_grid_generator'].includes(site)
+  const externalSources = (gridInvolved?1:0) + (generatorInvolved?1:0)
+  if (externalSources === 0) {
+    return { needed:false, sources:0, gridInvolved, generatorInvolved,
+      reason: site==='no_supply' ? 'No existing electricity supply — the proposed system is the site\'s primary, standalone supply, so there is nothing to switch between.' : 'No grid or generator connection to arbitrate against — the existing solar system shares the DC/AC bus rather than requiring transfer switching.' }
+  }
+  const sources = externalSources + 1 // + the new inverter system
+  return { needed:true, sources, gridInvolved, generatorInvolved,
+    reason: `${sources}-source transfer switching needed between ${[gridInvolved&&'the utility grid',generatorInvolved&&'the generator','the new inverter system'].filter(Boolean).join(', ')}.` }
+}
+
+export interface SwitchingRecommendation extends SwitchingRequirement {
+  designCurrentA: number
+  manual: GenericSwitch | null
+  ats: GenericSwitch | null
+  avs: GenericSwitch | null
+  avsCaution: boolean
+  avsWarning?: string
+}
+
+/** Recommends changeover/ATS/AVS tiers for a site+phase+inverter, with the backfeed-risk caution from protection_database_notes.txt applied whenever the grid is one of the sources. */
+export function recommendSwitching(site: SiteSupplyOption, phase: SitePhase, inverter: GenericInverter): SwitchingRecommendation {
+  const req = determineSwitchingRequirement(site)
+  if (!req.needed) return { ...req, designCurrentA:0, manual:null, ats:null, avs:null, avsCaution:false }
+
+  const is3 = Number(phase) === 3
+  const designCurrentA = Math.round((is3 ? (inverter.capacityKva*1000)/(Math.sqrt(3)*400) : (inverter.capacityKva*1000)/230) * DESIGN_MARGIN * 10) / 10
+  const voltageV = is3 ? 400 : 230
+  const poles = is3 ? '3P' : '1P'
+
+  const manual = smallestFitting(MANUAL_CHANGEOVER_DB, designCurrentA, s=>s.voltageV===voltageV && s.poles===poles)
+  const ats = smallestFitting(AC_ATS_DB, designCurrentA, s=>s.voltageV===voltageV && s.poles===poles && (req.sources<3 || (s.numberOfSources??'').includes('3')))
+  const avs = smallestFitting(AC_AVS_DB, designCurrentA, s=>s.voltageV===voltageV && s.poles===poles)
+
+  return {
+    ...req, designCurrentA, manual, ats, avs,
+    avsCaution: req.gridInvolved,
+    avsWarning: req.gridInvolved ? 'AVS units are a budget automatic-switching option, but are not always a verified break-before-make design — where the grid is one of the sources, a certified ATS or a mechanically-interlocked manual changeover is the safer choice to avoid backfeeding a line utility workers may assume is dead.' : undefined,
   }
 }
