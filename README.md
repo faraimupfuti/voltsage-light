@@ -17,6 +17,19 @@ npm install
 npm run dev   # → http://localhost:3000
 ```
 
+## Boujie (site chat assistant)
+Boujie is a chat widget (bottom-right, on every page) that answers questions about
+VoltSage and can run the same sizing/battery-runtime calculations as the free tools,
+via Claude tool-use — see `lib/boujie.ts`, `app/api/chat/route.ts`, `components/Boujie.tsx`.
+
+It needs an Anthropic API key to work:
+```bash
+cp .env.example .env.local
+# then set ANTHROPIC_API_KEY in .env.local (get one at https://console.anthropic.com)
+```
+Without a key set, the chat widget still renders but replies with a "not configured yet" message
+instead of erroring the whole site. `ANTHROPIC_MODEL` is optional and defaults to `claude-sonnet-5`.
+
 ## Deploy to GitHub
 ```bash
 git init
