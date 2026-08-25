@@ -5,6 +5,7 @@ import ProblemsSection from '@/components/ProblemsSection'
 import ResidentialTool from '@/components/tools/ResidentialTool'
 import AgriculturalTool from '@/components/tools/AgriculturalTool'
 import BatteryRuntimeTool from '@/components/tools/BatteryRuntimeTool'
+import DCCableSizingTool from '@/components/tools/DCCableSizingTool'
 import ArticlesSection from '@/components/ArticlesSection'
 import { ContactSection, Footer } from '@/components/ContactAndFooter'
 
@@ -19,6 +20,7 @@ export default function Home() {
         <ResidentialTool />
         <AgriculturalTool />
         <BatteryRuntimeTool />
+        <DCCableSizingTool />
         <ArticlesSection />
         <ContactSection />
       </main>
