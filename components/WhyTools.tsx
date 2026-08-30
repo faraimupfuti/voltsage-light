@@ -15,6 +15,7 @@ const TOOLS_META = [
   { href: '#sizing', color: '#0f172a' },
   { href: '#agricultural', color: '#1e293b' },
   { href: '#battery', color: '#1B17FF' },
+  { href: '#dc-cable-sizing', color: '#14109E' },
 ]
 
 export default function WhyTools() {
@@ -60,14 +61,14 @@ export default function WhyTools() {
             <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">{t.why2.h2a}<br/><span className="brand-text">{t.why2.h2b}</span></h2>
             <p className="text-ink-muted text-base leading-relaxed">{t.why2.sub}</p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {TOOLS.map((t2,i)=>(
               <Reveal key={i} delay={i*90} className="gradient-border rounded-2xl overflow-hidden">
                 <div className="card-flat p-6 h-full flex flex-col">
                   <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:t2.color}}>{t2.who}</div>
                   <h3 className="font-disp font-bold text-xl text-ink uppercase mb-3">{t2.name}</h3>
                   <p className="text-ink-muted text-sm flex-1 mb-6 leading-relaxed">{t2.what}</p>
-                  <a href={t2.href} className={`${i===2?'btn-primary':'btn-teal'} justify-center`}>{t2.cta}</a>
+                  <a href={t2.href} className={`${i===2||i===3?'btn-primary':'btn-teal'} justify-center`}>{t2.cta}</a>
                 </div>
               </Reveal>
             ))}

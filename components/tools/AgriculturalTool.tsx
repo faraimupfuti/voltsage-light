@@ -6,6 +6,7 @@ import{generateSizingReportPDF}from'@/lib/pdfReport'
 import{LeadLock}from'@/components/AccessGate'
 import{useLang}from'@/components/LanguageProvider'
 import TourGuide,{TourHandle,TourStep}from'@/components/TourGuide'
+import UseCaseStrip from'@/components/tools/UseCaseStrip'
 const IC:Record<string,string>={'Irrigation':'💧','Dairy Farming':'🐄','Poultry Farming':'🐓','Piggery':'🐷','Greenhouse Farming':'🌱','Crop Processing':'🌾','Mixed Farming':'🚜'}
 let as=0
 function Lbl({c,span}:{c:React.ReactNode;span?:boolean}){return<span className={`block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1 ${span?'col-span-2 sm:col-span-1':''}`}>{c}</span>}
@@ -90,9 +91,18 @@ export default function AgriculturalTool(){
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
           <div className="section-eyebrow">Free tool — Agricultural</div>
-          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Agricultural<br/><span className="brand-text-teal">Solar Sizing Tool</span></h2>
-          <p className="text-ink-muted text-base leading-relaxed">Farm loads are different. Pumps and motors draw <strong className="text-ink">2–3× their rated power on startup</strong>. Select your farm activity — the equipment list filters automatically.</p>
+          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Farm Load<br/><span className="brand-text-teal">Assessment Tool</span></h2>
+          <p className="text-ink-muted text-base leading-relaxed">Farm loads are different. Pumps and motors draw <strong className="text-ink">2–3× their rated power on startup</strong>. Select your farm activity — the equipment list filters automatically, and this assessment turns it into accurate system sizing.</p>
         </div>
+        <UseCaseStrip
+          audience="Farmers, farm managers and agri-processors sizing solar for irrigation, livestock or crop-processing operations"
+          useCases={[
+            'Borehole/irrigation pump owners checking startup surge won\'t trip an undersized inverter',
+            'Poultry, dairy and piggery operations sizing backup for ventilation, incubation or milking equipment',
+            'Crop processors (millers, driers, coolers) assessing motor loads before buying a genset or solar hybrid',
+            'Comparing a solar+battery system against diesel generator running costs for a specific farm activity',
+          ]}
+        />
         <div className="tool-frame">
         <div className="card-flat tool-frame-inner" data-tour="ag-card">
           <div className="flex flex-wrap gap-3 px-6 py-4 border-b border-surface-border bg-surface-subtle" data-tour="ag-sectors">

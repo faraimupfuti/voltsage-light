@@ -3,42 +3,43 @@ export type Locale = typeof LOCALES[number]
 export const LOCALE_LABELS: Record<Locale, string> = { en: 'English', es: 'Español', pt: 'Português', fr: 'Français', de: 'Deutsch' }
 
 const en = {
-  nav: { why: 'Why VoltSage', problems: 'Problems We Solve', sizing: 'Sizing Tool', agricultural: 'Agricultural', battery: 'Battery Runtime', articles: 'Articles', contact: 'Contact', cta: 'Size My Load', ctaMobile: 'Size My Load Free →' },
+  nav: { why: 'Why VoltSage', problems: 'Problems We Solve', sizing: 'Energy Assessment', agricultural: 'Farm Assessment', battery: 'Battery Assessment', dcCable: 'Cable Sizing', articles: 'Articles', contact: 'Contact', cta: 'Start My Assessment', ctaMobile: 'Start My Assessment Free →' },
   hero: {
-    eyebrow: 'Free solar sizing tools — use before you buy',
+    eyebrow: 'Free energy assessment & system sizing tools — use before you buy',
     h1a: "Don't buy solar", h1b: 'until you know', h1c: 'what you need.',
-    p1: 'Most people spend thousands on a solar system without knowing if the size is right. VoltSage gives you {free} to figure out exactly what your home, farm or business needs — before you talk to any installer.',
-    p1Strong: 'free professional tools',
+    p1: 'Most people spend thousands on a solar system without a proper load assessment first. VoltSage gives you {free} to run a real energy assessment and get accurate system sizing for your home, farm or business — before you talk to any installer.',
+    p1Strong: 'free professional assessment tools',
     p2: 'Free to use. No cost. No sales pitch. Just the right numbers in your hands.',
-    cta1: 'Use the free sizing tool', cta2: 'Why this matters →',
-    pill1: 'Residential Sizing', pill2: 'Agricultural Sizing', pill3: 'Battery Runtime',
-    stat1v: '100%', stat1l: 'Free to use', stat2v: '3', stat2l: 'Sizing tools', stat3v: '0', stat3l: 'Equipment sold', stat4v: '5 min', stat4l: 'To get your numbers',
+    cta1: 'Start your free energy assessment', cta2: 'Why this matters →',
+    pill1: 'Home Energy Assessment', pill2: 'Farm Load Assessment', pill3: 'Battery Assessment',
+    stat1v: '100%', stat1l: 'Free to use', stat2v: '4', stat2l: 'Assessment tools', stat3v: '0', stat3l: 'Equipment sold', stat4v: '5 min', stat4l: 'To get your numbers',
   },
   why1: {
-    eyebrow: 'Use VoltSage first — before you buy anything',
-    h2a: 'Why you should size your', h2b: 'system before you buy it',
-    sub: "A solar system is a major investment. Buying the wrong size is a mistake that costs you money and doesn't get fixed easily.",
+    eyebrow: 'Run the energy assessment first — before you buy anything',
+    h2a: 'Why a proper load assessment', h2b: 'comes before any system sizing',
+    sub: "A solar system is a major investment. Skipping the load assessment and guessing at system sizing is a mistake that costs you money and doesn't get fixed easily.",
     badgePre: 'Come to VoltSage ', badgeStrong: 'first', badgePost: ' — then talk to installers',
     items: [
-      { title: "You'll know exactly what size system you need", body: "Without a sizing tool, you're guessing. Our tool builds a real picture of how much electricity you use and when, then tells you the right inverter size, battery capacity and number of solar panels." },
+      { title: "You'll know exactly what size system you need", body: "Without a proper energy assessment, you're guessing. Our load assessment tool builds a real picture of how much electricity you use and when, then hands you accurate system sizing — inverter size, battery capacity and number of solar panels." },
       { title: "You won't overpay for a system that's too big", body: 'Installers often oversize systems to be "safe" — but you pay for every extra kilowatt. Knowing your actual numbers means you can push back on any quote that recommends more than you need.' },
       { title: "You won't be left with a system that's too small", body: 'An undersized system trips and shuts down when too many appliances run at once. Our tool calculates your peak demand and surge requirements so the system handles everything simultaneously.' },
       { title: 'You can compare quotes from different installers fairly', body: "When you know you need a 5 kW inverter, 10 kWh battery and 8 kWp of panels — you can compare every quote on the same terms. Without those numbers, you're comparing apples to oranges." },
       { title: 'Your system is sized for your actual location', body: 'Solar performs differently in Bulawayo versus Manicaland, in Egypt versus Ghana. Our tools use real peak sun hour data for your exact province or country — not a generic average.' },
-      { title: "It's completely free — no strings attached", body: "Residential sizing, agricultural sizing, battery runtime — all free, forever. We don't sell equipment and we don't earn a commission on what you buy." },
+      { title: "It's completely free — no strings attached", body: "Home energy assessment, farm load assessment, battery assessment, DC cable sizing — all free, forever. We don't sell equipment and we don't earn a commission on what you buy." },
     ],
   },
   why2: {
-    eyebrow: 'Three free tools — use them all',
+    eyebrow: 'Four free assessment tools — use them all',
     h2a: 'What VoltSage', h2b: 'gives you for free',
-    sub: 'No account. No payment. No sales call first. Just open the tool, enter your details, and get the numbers you need — in minutes.',
+    sub: 'No account. No payment. No sales call first. Just open the assessment tool, enter your details, and get the numbers you need — in minutes.',
     tools: [
-      { who: 'For homeowners, offices, shops and small businesses', name: 'Residential & Small Commercial Sizing Tool', what: 'Add the appliances you want to power and the times they run. The tool builds a 24-hour load profile and tells you the recommended inverter size, battery capacity and PV array.', cta: 'Size my home or office →' },
-      { who: 'For farmers, irrigation, poultry, dairy and crop processors', name: 'Agricultural Solar Sizing Tool', what: 'Farm equipment like borehole pumps draw 2–3× their rated power on startup. This tool accounts for that and gives you the right system size for your specific farm activity.', cta: 'Size my farm →' },
-      { who: 'For anyone who wants to know how long their battery will last', name: 'Battery Runtime Calculator', what: 'Enter your battery size, discharge depth, efficiency and load. Get the exact hours of backup — before you spend money on a battery.', cta: 'Calculate my runtime →' },
+      { who: 'For homeowners, offices, shops and small businesses', name: 'Residential & Small Commercial Energy Assessment', what: 'Add the appliances you want to power and the times they run. This load assessment tool builds a 24-hour load profile and tells you the recommended inverter size, battery capacity and PV array — full system sizing in one pass.', cta: 'Assess my home or office →' },
+      { who: 'For farmers, irrigation, poultry, dairy and crop processors', name: 'Agricultural Load Assessment Tool', what: 'Farm equipment like borehole pumps draw 2–3× their rated power on startup. This assessment accounts for that and gives you the right system size for your specific farm activity.', cta: 'Assess my farm →' },
+      { who: 'For anyone who wants to know how long their battery will last', name: 'Battery Runtime Assessment', what: 'Enter your battery size, discharge depth, efficiency and load. Get the exact hours of backup — before you spend money on a battery.', cta: 'Assess my runtime →' },
+      { who: 'For installers, EPCs and hands-on DIY system owners', name: 'DC Cable Sizing Tool', what: 'Verify that a PV string or battery DC cable is actually rated for the job — ampacity and voltage drop, checked against IEC reference derating data, before it goes in the wall.', cta: 'Verify my cable →' },
     ],
-    compareTitle: 'Why is it ', compareTitleAccent: 'essential', compareTitlePost: ' to use these tools before you buy?',
-    compareBody: 'Solar systems are not like buying a phone. Once panels are on your roof and an inverter is wired in, fixing the wrong size means spending more money. The sizing tools take your actual appliances, your actual schedule, and your actual location — and turn that into the correct system size.',
+    compareTitle: 'Why is it ', compareTitleAccent: 'essential', compareTitlePost: ' to run an assessment before you buy?',
+    compareBody: 'Solar systems are not like buying a phone. Once panels are on your roof and an inverter is wired in, fixing the wrong size means spending more money. A proper energy assessment takes your actual appliances, your actual schedule, and your actual location — and turns that into correct system sizing.',
     points: [
       'Wrong inverter size = system trips every time the pump starts',
       'Wrong battery size = runs out of power at 2am every night',
@@ -48,10 +49,10 @@ const en = {
   },
   problems: {
     eyebrow: 'The solar industry problem',
-    h2a: 'Six things that go wrong', h2b: 'when you skip the sizing step',
-    sub: 'Most solar problems are not caused by bad equipment or bad installers. They are caused by not knowing the right system size before the purchase decision is made. VoltSage exists to fix that — for free, before you spend a cent.',
+    h2a: 'Six things that go wrong', h2b: 'when you skip the energy assessment',
+    sub: 'Most solar problems are not caused by bad equipment or bad installers. They are caused by skipping the load assessment and not knowing the right system size before the purchase decision is made. VoltSage exists to fix that — for free, before you spend a cent.',
     items: [
-      { title: 'Installers size systems by guessing', body: "Most solar installers don't do a proper load analysis before recommending a system size. They estimate based on your electricity bill or the number of bedrooms — not on what appliances you actually run and when. The result is a system that's either too big (you overpay) or too small (it trips and underperforms).", stat: 'A 10-minute load analysis prevents years of regret.' },
+      { title: 'Installers size systems by guessing', body: "Most solar installers don't do a proper energy assessment before recommending a system size. They estimate based on your electricity bill or the number of bedrooms — not on what appliances you actually run and when. The result is a system that's either too big (you overpay) or too small (it trips and underperforms).", stat: 'A 10-minute load assessment prevents years of regret.' },
       { title: 'Three quotes, three different systems — which is right?', body: "One installer says 5 kW, another says 8 kW, a third says 10 kW — all for the same house. Without knowing your own numbers, you can't judge which is correct. You end up choosing on price, not on accuracy.", stat: 'Know your numbers first. Then compare quotes on equal terms.' },
       { title: 'Solar jargon keeps buyers in the dark', body: "kWp, DoD, PSH, SLD, BoQ — the industry is full of technical terms that most buyers don't understand. This information gap benefits sellers, not buyers. You should understand what you're buying before you sign anything.", stat: 'Our tools and articles explain everything in plain language.' },
       { title: 'Nobody tells you how long your battery will actually last', body: 'A "10 kWh battery" doesn\'t mean 10 kWh of backup. Depth of discharge, efficiency losses and your actual load all reduce what you get. Most buyers find this out after installation — when it\'s too late.', stat: 'Use the Battery Runtime Calculator before you buy a battery.' },
@@ -85,7 +86,7 @@ const en = {
 type Dict = typeof en
 
 const es: Dict = {
-  nav: { why: 'Por qué VoltSage', problems: 'Problemas que resolvemos', sizing: 'Herramienta de dimensionamiento', agricultural: 'Agrícola', battery: 'Autonomía de batería', articles: 'Artículos', contact: 'Contacto', cta: 'Dimensionar mi carga', ctaMobile: 'Dimensionar gratis →' },
+  nav: { why: 'Por qué VoltSage', problems: 'Problemas que resolvemos', sizing: 'Herramienta de dimensionamiento', agricultural: 'Agrícola', battery: 'Autonomía de batería', dcCable: 'Cables CC', articles: 'Artículos', contact: 'Contacto', cta: 'Dimensionar mi carga', ctaMobile: 'Dimensionar gratis →' },
   hero: {
     eyebrow: 'Herramientas gratuitas de dimensionamiento solar — úsalas antes de comprar',
     h1a: 'No compres solar', h1b: 'sin saber', h1c: 'lo que necesitas.',
@@ -165,7 +166,7 @@ const es: Dict = {
 }
 
 const pt: Dict = {
-  nav: { why: 'Por que a VoltSage', problems: 'Problemas que resolvemos', sizing: 'Ferramenta de dimensionamento', agricultural: 'Agrícola', battery: 'Autonomia da bateria', articles: 'Artigos', contact: 'Contato', cta: 'Dimensionar minha carga', ctaMobile: 'Dimensionar grátis →' },
+  nav: { why: 'Por que a VoltSage', problems: 'Problemas que resolvemos', sizing: 'Ferramenta de dimensionamento', agricultural: 'Agrícola', battery: 'Autonomia da bateria', dcCable: 'Cabos CC', articles: 'Artigos', contact: 'Contato', cta: 'Dimensionar minha carga', ctaMobile: 'Dimensionar grátis →' },
   hero: {
     eyebrow: 'Ferramentas gratuitas de dimensionamento solar — use antes de comprar',
     h1a: 'Não compre solar', h1b: 'sem saber', h1c: 'o que você precisa.',
@@ -245,7 +246,7 @@ const pt: Dict = {
 }
 
 const fr: Dict = {
-  nav: { why: 'Pourquoi VoltSage', problems: 'Problèmes résolus', sizing: 'Outil de dimensionnement', agricultural: 'Agricole', battery: 'Autonomie de batterie', articles: 'Articles', contact: 'Contact', cta: 'Dimensionner ma charge', ctaMobile: 'Dimensionner gratuitement →' },
+  nav: { why: 'Pourquoi VoltSage', problems: 'Problèmes résolus', sizing: 'Outil de dimensionnement', agricultural: 'Agricole', battery: 'Autonomie de batterie', dcCable: 'Câbles CC', articles: 'Articles', contact: 'Contact', cta: 'Dimensionner ma charge', ctaMobile: 'Dimensionner gratuitement →' },
   hero: {
     eyebrow: 'Outils gratuits de dimensionnement solaire — à utiliser avant d\'acheter',
     h1a: "N'achetez pas de solaire", h1b: 'avant de savoir', h1c: 'ce dont vous avez besoin.',
@@ -325,7 +326,7 @@ const fr: Dict = {
 }
 
 const de: Dict = {
-  nav: { why: 'Warum VoltSage', problems: 'Gelöste Probleme', sizing: 'Dimensionierungstool', agricultural: 'Landwirtschaft', battery: 'Batterielaufzeit', articles: 'Artikel', contact: 'Kontakt', cta: 'Last dimensionieren', ctaMobile: 'Kostenlos dimensionieren →' },
+  nav: { why: 'Warum VoltSage', problems: 'Gelöste Probleme', sizing: 'Dimensionierungstool', agricultural: 'Landwirtschaft', battery: 'Batterielaufzeit', dcCable: 'DC-Kabel', articles: 'Artikel', contact: 'Kontakt', cta: 'Last dimensionieren', ctaMobile: 'Kostenlos dimensionieren →' },
   hero: {
     eyebrow: 'Kostenlose Solar-Dimensionierungstools — vor dem Kauf nutzen',
     h1a: 'Kaufen Sie keine Solaranlage', h1b: 'bevor Sie wissen', h1c: 'was Sie brauchen.',

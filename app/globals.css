@@ -60,7 +60,23 @@ input[type="number"].tool-input,input[type="text"].tool-input,textarea.tool-inpu
 @keyframes orb-pulse{0%,100%{transform:scale(1) translateY(0);opacity:.9}50%{transform:scale(1.1) translateY(-14px);opacity:.6}}
 .orb-pulse{animation:orb-pulse 9s ease-in-out infinite}
 
+/* Bright-sun glow — used on the energy-assessment sun icon */
+@keyframes sun-pulse{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.5)}50%{box-shadow:0 0 0 12px rgba(250,204,21,0)}}
+.sun-pulse{animation:sun-pulse 2.6s ease-out infinite}
+
+/* Slowly rotating sun rays, for a bit of cartoon energy */
+@keyframes sun-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.sun-rays{animation:sun-spin 14s linear infinite;transform-origin:center}
+
+/* Scanning sweep — evokes an assessment/analysis pass over data */
+@keyframes scan-sweep{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.scan-sweep{animation:scan-sweep 3.2s ease-in-out infinite}
+
+/* Gentle up/down bob, used on small decorative badges */
+@keyframes soft-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.soft-bob{animation:soft-bob 3s ease-in-out infinite}
+
 @media (prefers-reduced-motion: reduce){
-  .tool-frame,.brand-text,.brand-text-orange,.brand-text-teal,.reveal,.orb-pulse,.animate-float{animation:none!important;transition:none!important}
+  .tool-frame,.brand-text,.brand-text-orange,.brand-text-teal,.reveal,.orb-pulse,.animate-float,.sun-pulse,.sun-rays,.scan-sweep,.soft-bob{animation:none!important;transition:none!important}
   .reveal{opacity:1!important;transform:none!important}
 }

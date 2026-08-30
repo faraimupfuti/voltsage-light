@@ -49,8 +49,8 @@ export default function Hero() {
                   <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">Sizing result</div>
                   <div className="font-disp font-bold text-lg text-ink uppercase">Harare Residence</div>
                 </div>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:'linear-gradient(135deg,#1B17FF,#14109E)'}}>
-                  <Sun size={18} className="text-white"/>
+                <div className="relative w-10 h-10 rounded-xl flex items-center justify-center sun-pulse" style={{background:'linear-gradient(135deg,#FDE047,#F59E0B)'}}>
+                  <Sun size={20} className="text-white sun-rays" strokeWidth={2.25}/>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
@@ -61,9 +61,13 @@ export default function Hero() {
                   </div>
                 ))}
               </div>
-              <div className="bg-surface-subtle rounded-xl p-3">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-ink-faint mb-2">24-hour load profile</div>
-                <div className="flex items-end gap-0.5 h-10">
+              <div className="relative bg-surface-subtle rounded-xl p-3 overflow-hidden">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[9px] font-mono uppercase tracking-wider text-ink-faint">24-hour load profile</div>
+                  <div className="text-[8px] font-mono uppercase tracking-wider text-brand-orange flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"/>Assessing</div>
+                </div>
+                <div className="relative flex items-end gap-0.5 h-10">
+                  <div className="absolute inset-y-0 w-8 pointer-events-none scan-sweep" style={{background:'linear-gradient(90deg,transparent,rgba(27,23,255,.16),transparent)'}}/>
                   {[1,1,1,2,2,3,5,7,6,5,5,6,5,4,5,6,7,8,7,6,5,3,2,1].map((v,i)=>(
                     <div key={i} className="flex-1 rounded-sm" style={{height:`${(v/8)*100}%`,background:(i<6||i>=18)?'#0f172a':'#1B17FF',opacity:0.75}}/>
                   ))}

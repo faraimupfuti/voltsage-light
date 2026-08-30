@@ -14,6 +14,7 @@ import {
 import { generateSizingReportPDF } from '@/lib/pdfReport'
 import { LeadLock } from '@/components/AccessGate'
 import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
+import UseCaseStrip from '@/components/tools/UseCaseStrip'
 
 type Tab = 'pv' | 'battery'
 type Mode = 'standard' | 'advanced'
@@ -222,6 +223,16 @@ export default function DCCableSizingTool() {
             checked against IEC 60364-5-52 derating data. Conservative and transparent, not an optimiser.
           </p>
         </div>
+
+        <UseCaseStrip
+          audience="Installers, EPCs, system integrators and hands-on DIY owners wiring a PV or battery DC circuit"
+          useCases={[
+            'Verifying a proposed cable size before it goes in conduit or trunking, not after',
+            'Checking a longer-than-usual battery-to-inverter run doesn\'t exceed the voltage-drop limit',
+            'Cross-checking a supplier or contractor\'s recommended cable size against IEC reference data',
+            'Producing a quick PDF record of the ampacity and voltage-drop check for a client or inspector',
+          ]}
+        />
 
         <div className="tool-frame">
           <div className="card-flat tool-frame-inner" data-tour="dc-card">

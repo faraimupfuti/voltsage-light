@@ -6,6 +6,7 @@ import{generateSizingReportPDF}from'@/lib/pdfReport'
 import{LeadLock}from'@/components/AccessGate'
 import{useLang}from'@/components/LanguageProvider'
 import TourGuide,{TourHandle,TourStep}from'@/components/TourGuide'
+import UseCaseStrip from'@/components/tools/UseCaseStrip'
 const CC:Record<string,string>={'Lighting':'#1B17FF','Entertainment & Electronics':'#4640FF','Refrigeration':'#14109E','Water Systems':'#8D88FF','Kitchen':'#0A0880','Climate Control':'#312ECC','Laundry':'#64748b','High Power Loads':'#0f172a','Miscellaneous':'#94a3b8'}
 const CATS=[...new Set(APPLIANCE_CATALOG.map(a=>a.cat))]
 let rs=0
@@ -93,9 +94,18 @@ export default function ResidentialTool(){
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
           <div className="section-eyebrow">Free tool — Residential &amp; Small Commercial</div>
-          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Solar Sizing Tool</h2>
-          <p className="text-ink-muted text-base leading-relaxed">Add your appliances and operating times. The tool builds a real 24-hour load profile and sizes your inverter, battery and PV array — the same methodology a qualified engineer uses.</p>
+          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Home &amp; Office Energy Assessment</h2>
+          <p className="text-ink-muted text-base leading-relaxed">Add your appliances and operating times. This load assessment tool builds a real 24-hour load profile and delivers full system sizing — inverter, battery and PV array — using the same methodology a qualified engineer uses.</p>
         </div>
+        <UseCaseStrip
+          audience="Homeowners, landlords, office managers and small shop or clinic owners planning a new solar/battery install"
+          useCases={[
+            'Sizing a backup system before an installer quote, so you can spot an oversized or undersized proposal',
+            'Comparing quotes from multiple installers on equal terms, using your own numbers',
+            'Planning a phased upgrade — e.g. lights and fridge now, aircon later — around a realistic load profile',
+            'Checking whether an existing inverter/battery combo can actually cover your daily energy use',
+          ]}
+        />
         <div className="tool-frame">
         <div className="card-flat tool-frame-inner" data-tour="res-card">
           <div className="flex flex-wrap gap-4 items-center justify-between px-6 py-4 border-b border-surface-border bg-white">

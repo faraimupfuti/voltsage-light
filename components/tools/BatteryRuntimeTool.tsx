@@ -6,6 +6,7 @@ import { generateSizingReportPDF } from '@/lib/pdfReport'
 import { useLang } from '@/components/LanguageProvider'
 import { LeadLock } from '@/components/AccessGate'
 import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
+import UseCaseStrip from '@/components/tools/UseCaseStrip'
 
 function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
   const R = 54, circ = 2 * Math.PI * R
@@ -93,13 +94,23 @@ export default function BatteryRuntimeTool() {
         <div className="max-w-2xl mb-10">
           <div className="section-eyebrow">Free tool — Battery Runtime</div>
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">
-            Battery Runtime<br /><span className="brand-text-orange">Calculator</span>
+            Battery Runtime<br /><span className="brand-text-orange">Assessment</span>
           </h2>
           <p className="text-ink-muted text-base leading-relaxed">
             How long will your battery actually last? Enter the battery size, depth of discharge,
-            efficiency and the load you plan to run. Get the exact hours of backup — before you buy.
+            efficiency and the load you plan to run. This quick battery assessment gives you the exact hours of backup — before you buy.
           </p>
         </div>
+
+        <UseCaseStrip
+          audience="Anyone buying, comparing or already running a battery who wants a realistic backup-time number"
+          useCases={[
+            'Checking a battery quote\'s advertised capacity against what you\'ll actually get at your load',
+            'Deciding between battery sizes/chemistries by comparing real runtime, not just kWh on a spec sheet',
+            'Planning load-shedding backup — how many hours a battery covers your fridge, lights and router',
+            'Sanity-checking an installer\'s battery recommendation before you commit to a purchase',
+          ]}
+        />
 
         <div className="tool-frame">
         <div className="card-flat tool-frame-inner" data-tour="batt-card">

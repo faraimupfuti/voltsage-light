@@ -14,7 +14,8 @@ export default function Header() {
   const NAV = [
     { label: t.nav.why, href: '/#why' }, { label: t.nav.problems, href: '/#problems' },
     { label: t.nav.sizing, href: '/#sizing' }, { label: t.nav.agricultural, href: '/#agricultural' },
-    { label: t.nav.battery, href: '/#battery' }, { label: t.nav.articles, href: '/#articles' },
+    { label: t.nav.battery, href: '/#battery' }, { label: t.nav.dcCable, href: '/#dc-cable-sizing' },
+    { label: t.nav.articles, href: '/#articles' },
     { label: t.nav.contact, href: '/#contact' },
   ]
 
