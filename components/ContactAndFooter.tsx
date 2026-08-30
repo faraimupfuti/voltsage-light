@@ -47,7 +47,7 @@ export function ContactSection() {
             Come to us first.<br /><span className="brand-text">Buy with confidence.</span>
           </h2>
           <p className="text-ink-muted text-base leading-relaxed">
-            Use the free sizing tools above to get your numbers. Then reach out if you want an engineer to review a quote, refine your sizing, or design your system from scratch.
+            Use the premium assessment tools above to get your numbers. Then reach out if you want an engineer to review a quote, refine your sizing, or design your system from scratch.
           </p>
         </div>
 
@@ -113,10 +113,10 @@ export function ContactSection() {
           <div className="card p-8 flex flex-col justify-between">
             <div>
               <h3 className="font-disp font-bold text-2xl text-ink uppercase mb-2">What VoltSage does</h3>
-              <p className="text-ink-muted text-sm mb-6">We help individuals and businesses understand exactly what solar system they need — before they spend any money. Our tools are free. Our advice is independent. We earn nothing from equipment sales.</p>
+              <p className="text-ink-muted text-sm mb-6">We help individuals and businesses understand exactly what solar system they need — before they spend any money. Our tools are premium, engineer-grade, and independent. We earn nothing from equipment sales.</p>
               <div className="space-y-4">
                 {[
-                  { label:'Use our tools first',        desc:'Free residential, agricultural and battery runtime tools — no sign-up, no cost, available right now.' },
+                  { label:'Use our tools first',        desc:'Premium residential, agricultural, battery and cable sizing tools — engineer-grade calculations, available right now.' },
                   { label:'Get informed, not sold to',  desc:'We explain your numbers in plain language so you understand what you\'re buying before you buy it.' },
                   { label:'Compare quotes confidently', desc:'Walk into any installer conversation knowing your required inverter size, battery and PV array.' },
                   { label:'No conflict of interest',    desc:'We never profit from equipment. Our only product is helping you make the right decision.' },
@@ -153,14 +153,14 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <Image src="/logo.png" alt="VoltSage Solutions — free solar sizing tools" width={170} height={36} className="h-8 w-auto"/>
+              <Image src="/logo.png" alt="VoltSage Solutions — premium solar energy assessment & sizing tools" width={170} height={36} className="h-8 w-auto"/>
             </div>
-            <p className="text-ink-faint text-xs leading-relaxed max-w-xs">Use our free tools before you buy a solar system. Know your numbers. Make a confident decision. We sell no equipment — ever.</p>
+            <p className="text-ink-faint text-xs leading-relaxed max-w-xs">Use our premium assessment tools before you buy a solar system. Know your numbers. Make a confident decision. We sell no equipment — ever.</p>
           </div>
           <div>
-            <h5 className="font-mono text-[10px] uppercase tracking-widest text-brand-teal mb-3">Free Tools</h5>
+            <h5 className="font-mono text-[10px] uppercase tracking-widest text-brand-teal mb-3">Premium Tools</h5>
             <ul className="space-y-2 text-xs text-ink-faint">
-              {[['Residential Sizing Tool','#sizing'],['Agricultural Sizing Tool','#agricultural'],['Battery Runtime Calculator','#battery']].map(([l,h])=>(
+              {[['Residential Sizing Tool','#sizing'],['Agricultural Sizing Tool','#agricultural'],['Battery Runtime Calculator','#battery'],['DC Cable Sizing Tool','#dc-cable-sizing']].map(([l,h])=>(
                 <li key={l}><a href={h} className="hover:text-ink-muted transition-colors">{l}</a></li>
               ))}
             </ul>

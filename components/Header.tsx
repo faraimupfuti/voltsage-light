@@ -24,7 +24,7 @@ export default function Header() {
       <div className="h-0.5 w-full" style={{background:'linear-gradient(90deg,#1B17FF,#14109E,#0f172a,#1e293b)'}}/>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         <a href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-          <Image src="/logo.png" alt="VoltSage Solutions — free solar sizing tools" width={170} height={36} priority className="h-8 w-auto sm:h-9"/>
+          <Image src="/logo.png" alt="VoltSage Solutions — premium solar energy assessment & sizing tools" width={170} height={36} priority className="h-8 w-auto sm:h-9"/>
         </a>
         <nav className="hidden lg:flex items-center gap-5">
           {NAV.map(n=><a key={n.href} href={n.href} className="text-[11px] font-mono uppercase tracking-widest text-ink-muted hover:text-brand-teal transition-colors">{n.label}</a>)}

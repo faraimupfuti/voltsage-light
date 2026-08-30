@@ -86,6 +86,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, reply: "I've worked through a few calculations but need a bit more detail to finish — could you clarify your last request?", toolCalls })
   } catch (err) {
     console.error('Boujie chat error:', err)
-    return NextResponse.json({ ok: false, error: 'Boujie is having trouble responding right now. Please try again shortly, or use the free sizing tools directly.' }, { status: 502 })
+    return NextResponse.json({ ok: false, error: 'Boujie is having trouble responding right now. Please try again shortly, or use the premium sizing tools directly.' }, { status: 502 })
   }
 }

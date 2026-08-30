@@ -90,7 +90,7 @@ export default function AgriculturalTool(){
     <section id="agricultural" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
-          <div className="section-eyebrow">Free tool — Agricultural</div>
+          <div className="section-eyebrow">Premium tool — Agricultural</div>
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Farm Load<br/><span className="brand-text-teal">Assessment Tool</span></h2>
           <p className="text-ink-muted text-base leading-relaxed">Farm loads are different. Pumps and motors draw <strong className="text-ink">2–3× their rated power on startup</strong>. Select your farm activity — the equipment list filters automatically, and this assessment turns it into accurate system sizing.</p>
         </div>

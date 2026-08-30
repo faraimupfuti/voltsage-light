@@ -49,7 +49,7 @@ export default function FoundersPage() {
 
               <p className="text-base text-ink-muted leading-relaxed mb-4">
                 Nyasha Mpofu is the founder of VoltSage and an Electrical Engineer. She started VoltSage to
-                close the gap between what solar buyers are told and what the numbers actually say — building free,
+                close the gap between what solar buyers are told and what the numbers actually say — building premium,
                 engineering-led tools that size a system correctly <em className="not-italic text-ink font-medium">before</em> a
                 single panel is bought, not after.
               </p>

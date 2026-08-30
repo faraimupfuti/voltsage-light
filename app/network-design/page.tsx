@@ -303,7 +303,7 @@ export default function NetworkDesignPage(){
                           <button onClick={()=>removeRow(r.id)} className="text-ink-faint hover:text-red-500 transition-colors flex justify-center"><Trash2 size={14}/></button>
                         </div>
                       ))}
-                      {rows.length===0 && <div className="text-center text-ink-faint font-mono text-xs py-8 border border-dashed border-surface-border rounded-xl">No loads yet — add one below, or send a load profile here from the free sizing tools.</div>}
+                      {rows.length===0 && <div className="text-center text-ink-faint font-mono text-xs py-8 border border-dashed border-surface-border rounded-xl">No loads yet — add one below, or send a load profile here from the premium sizing tools.</div>}
                     </div>
                     <button onClick={addRow} className="btn-teal py-2 px-4 text-xs mb-8"><Plus size={14}/> Add load</button>
 
@@ -379,7 +379,7 @@ export default function NetworkDesignPage(){
                     <p className="text-sm text-ink-muted mb-6">Each selected goal produces its own independent design scenario — adjustments are not combined.</p>
 
                     <div className="rounded-xl border border-surface-border p-4 mb-8 bg-surface-subtle">
-                      <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-3">Free-tool baseline</div>
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-3">Assessment baseline</div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-sm">
                         <div><span className="block text-ink-faint text-[10px] uppercase">Inverter</span><span className="text-ink font-semibold">{baseline.invSize} kW</span></div>
                         <div><span className="block text-ink-faint text-[10px] uppercase">Surge</span><span className="text-ink font-semibold">{baseline.Surge_kW.toFixed(2)} kW</span></div>

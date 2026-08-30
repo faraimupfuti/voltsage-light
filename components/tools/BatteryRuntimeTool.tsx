@@ -92,7 +92,7 @@ export default function BatteryRuntimeTool() {
     <section id="battery" className="py-24 bg-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
-          <div className="section-eyebrow">Free tool — Battery Runtime</div>
+          <div className="section-eyebrow">Premium tool — Battery Runtime</div>
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">
             Battery Runtime<br /><span className="brand-text-orange">Assessment</span>
           </h2>

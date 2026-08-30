@@ -214,7 +214,7 @@ export default function DCCableSizingTool() {
     <section id="dc-cable-sizing" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
-          <div className="section-eyebrow">Free tool — DC Cable Sizing</div>
+          <div className="section-eyebrow">Premium tool — DC Cable Sizing</div>
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">
             DC Cable Sizing<br /><span className="brand-text-teal">Verification Tool</span>
           </h2>

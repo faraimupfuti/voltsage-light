@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
 
           <p className="text-base text-ink-muted leading-relaxed mb-12">
             At VoltSage, we value your privacy and are committed to protecting your personal information. This Privacy
-            Policy explains what information we collect through voltsage.co and our free sizing tools, how we use it,
+            Policy explains what information we collect through voltsage.co and our premium sizing tools, how we use it,
             who we share it with, and the choices you have.
           </p>
 
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
           <Section title="Information We Collect">
             <p>We collect different information depending on how you use the site:</p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong className="text-ink">To unlock the free sizing tools</strong> — your full name, country, and email address.</li>
+              <li><strong className="text-ink">To unlock the premium sizing tools</strong> — your full name, country, and email address.</li>
               <li><strong className="text-ink">If you submit an enquiry</strong> through our contact form — your name, a contact detail (phone number or email, whichever you provide), the service you're asking about, your location, and your message.</li>
               <li><strong className="text-ink">The details you enter into the sizing tools</strong> — the appliances or farm equipment you add, their power ratings, quantities, and operating schedules, plus your selected location. This is used to calculate your results and is described further under "How Your Tool Data Is Handled" below.</li>
               <li><strong className="text-ink">Technical and usage information</strong> — general analytics such as pages visited and browser type, collected through a privacy-focused analytics service (see "Cookies &amp; Analytics" below).</li>
@@ -59,7 +59,7 @@ export default function PrivacyPolicyPage() {
 
           <Section title="How We Use Your Information">
             <ul className="list-disc pl-5 space-y-1.5">
-              <li>To unlock and provide access to our free solar sizing and energy assessment tools</li>
+              <li>To unlock and provide access to our premium solar sizing and energy assessment tools</li>
               <li>To respond to enquiries and support requests submitted through our contact form</li>
               <li>To follow up about your solar sizing results, where you've asked us to</li>
               <li>To understand general usage trends and improve our tools and website</li>

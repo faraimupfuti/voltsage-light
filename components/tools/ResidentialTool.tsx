@@ -93,7 +93,7 @@ export default function ResidentialTool(){
     <section id="sizing" className="py-24 bg-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
-          <div className="section-eyebrow">Free tool — Residential &amp; Small Commercial</div>
+          <div className="section-eyebrow">Premium tool — Residential &amp; Small Commercial</div>
           <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Home &amp; Office Energy Assessment</h2>
           <p className="text-ink-muted text-base leading-relaxed">Add your appliances and operating times. This load assessment tool builds a real 24-hour load profile and delivers full system sizing — inverter, battery and PV array — using the same methodology a qualified engineer uses.</p>
         </div>

@@ -147,7 +147,7 @@ export interface PremiumScenario {
 /**
  * Section 3 — System Design Engine.
  * Each selected goal (up to 3, in priority order) produces an INDEPENDENT
- * scenario computed fresh from the Free Sizing Tool baseline. Adjustments
+ * scenario computed fresh from the Sizing Tool baseline. Adjustments
  * are NOT cumulative across goals, per spec.
  */
 export function calculatePremiumScenarios(baseline: SizingResult, goals: EnergyGoal[]): PremiumScenario[] {
