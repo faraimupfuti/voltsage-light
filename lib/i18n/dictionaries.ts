@@ -3,7 +3,7 @@ export type Locale = typeof LOCALES[number]
 export const LOCALE_LABELS: Record<Locale, string> = { en: 'English', es: 'Español', pt: 'Português', fr: 'Français', de: 'Deutsch' }
 
 const en = {
-  nav: { why: 'Why VoltSage', problems: 'Problems We Solve', sizing: 'Energy Assessment', agricultural: 'Farm Assessment', battery: 'Battery Assessment', dcCable: 'Cable Sizing', articles: 'Articles', contact: 'Contact', cta: 'Start My Assessment', ctaMobile: 'Start My Premium Assessment →' },
+  nav: { why: 'Why VoltSage', problems: 'Problems We Solve', sizing: 'Energy Assessment', agricultural: 'Farm Assessment', battery: 'Battery Assessment', dcCable: 'Cable Sizing', comingSoon: 'Coming Soon', articles: 'Articles', contact: 'Contact', cta: 'Start My Assessment', ctaMobile: 'Start My Premium Assessment →' },
   hero: {
     eyebrow: 'Premium energy assessment & system sizing tools — trusted before you buy',
     h1a: "Don't buy solar", h1b: 'until you know', h1c: 'what you need.',
@@ -86,7 +86,7 @@ const en = {
 type Dict = typeof en
 
 const es: Dict = {
-  nav: { why: 'Por qué VoltSage', problems: 'Problemas que resolvemos', sizing: 'Herramienta de dimensionamiento', agricultural: 'Agrícola', battery: 'Autonomía de batería', dcCable: 'Cables CC', articles: 'Artículos', contact: 'Contacto', cta: 'Dimensionar mi carga', ctaMobile: 'Evaluación Premium →' },
+  nav: { why: 'Por qué VoltSage', problems: 'Problemas que resolvemos', sizing: 'Herramienta de dimensionamiento', agricultural: 'Agrícola', battery: 'Autonomía de batería', dcCable: 'Cables CC', comingSoon: 'Próximamente', articles: 'Artículos', contact: 'Contacto', cta: 'Dimensionar mi carga', ctaMobile: 'Evaluación Premium →' },
   hero: {
     eyebrow: 'Herramientas premium de evaluación energética y dimensionamiento — antes de comprar',
     h1a: 'No compres solar', h1b: 'sin saber', h1c: 'lo que necesitas.',
@@ -166,7 +166,7 @@ const es: Dict = {
 }
 
 const pt: Dict = {
-  nav: { why: 'Por que a VoltSage', problems: 'Problemas que resolvemos', sizing: 'Ferramenta de dimensionamento', agricultural: 'Agrícola', battery: 'Autonomia da bateria', dcCable: 'Cabos CC', articles: 'Artigos', contact: 'Contato', cta: 'Dimensionar minha carga', ctaMobile: 'Avaliação Premium →' },
+  nav: { why: 'Por que a VoltSage', problems: 'Problemas que resolvemos', sizing: 'Ferramenta de dimensionamento', agricultural: 'Agrícola', battery: 'Autonomia da bateria', dcCable: 'Cabos CC', comingSoon: 'Em breve', articles: 'Artigos', contact: 'Contato', cta: 'Dimensionar minha carga', ctaMobile: 'Avaliação Premium →' },
   hero: {
     eyebrow: 'Ferramentas premium de avaliação energética e dimensionamento — antes de comprar',
     h1a: 'Não compre solar', h1b: 'sem saber', h1c: 'o que você precisa.',
@@ -246,7 +246,7 @@ const pt: Dict = {
 }
 
 const fr: Dict = {
-  nav: { why: 'Pourquoi VoltSage', problems: 'Problèmes résolus', sizing: 'Outil de dimensionnement', agricultural: 'Agricole', battery: 'Autonomie de batterie', dcCable: 'Câbles CC', articles: 'Articles', contact: 'Contact', cta: 'Dimensionner ma charge', ctaMobile: 'Évaluation Premium →' },
+  nav: { why: 'Pourquoi VoltSage', problems: 'Problèmes résolus', sizing: 'Outil de dimensionnement', agricultural: 'Agricole', battery: 'Autonomie de batterie', dcCable: 'Câbles CC', comingSoon: 'Bientôt disponible', articles: 'Articles', contact: 'Contact', cta: 'Dimensionner ma charge', ctaMobile: 'Évaluation Premium →' },
   hero: {
     eyebrow: 'Outils premium d\'évaluation énergétique et de dimensionnement — avant d\'acheter',
     h1a: "N'achetez pas de solaire", h1b: 'avant de savoir', h1c: 'ce dont vous avez besoin.',
@@ -326,7 +326,7 @@ const fr: Dict = {
 }
 
 const de: Dict = {
-  nav: { why: 'Warum VoltSage', problems: 'Gelöste Probleme', sizing: 'Dimensionierungstool', agricultural: 'Landwirtschaft', battery: 'Batterielaufzeit', dcCable: 'DC-Kabel', articles: 'Artikel', contact: 'Kontakt', cta: 'Last dimensionieren', ctaMobile: 'Premium-Bewertung starten →' },
+  nav: { why: 'Warum VoltSage', problems: 'Gelöste Probleme', sizing: 'Dimensionierungstool', agricultural: 'Landwirtschaft', battery: 'Batterielaufzeit', dcCable: 'DC-Kabel', comingSoon: 'Demnächst', articles: 'Artikel', contact: 'Kontakt', cta: 'Last dimensionieren', ctaMobile: 'Premium-Bewertung starten →' },
   hero: {
     eyebrow: 'Premium-Tools für Energiebewertung & Dimensionierung — vor dem Kauf nutzen',
     h1a: 'Kaufen Sie keine Solaranlage', h1b: 'bevor Sie wissen', h1c: 'was Sie brauchen.',
