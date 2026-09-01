@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { AccessProvider } from '@/components/AccessGate'
 import { LanguageProvider } from '@/components/LanguageProvider'
 import Boujie from '@/components/Boujie'
+import { SITE_URL } from '@/lib/site'
 import './globals.css'
 
 export const viewport: Viewport = {
@@ -10,8 +11,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
 }
-
-const SITE_URL = 'https://voltsage.co'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

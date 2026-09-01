@@ -2,6 +2,8 @@
 import { ShieldCheck, Clock, BadgeCheck, Calculator, MapPin, Gift } from 'lucide-react'
 import Reveal from './Reveal'
 import { useLang } from './LanguageProvider'
+import { QrShareButton } from './tools/ToolPageHeader'
+import { toolUrl } from '@/lib/site'
 
 const WHY_META = [
   { icon: Calculator, color: '#1B17FF' },
@@ -12,10 +14,10 @@ const WHY_META = [
   { icon: Gift, color: '#64748b' },
 ]
 const TOOLS_META = [
-  { href: '#sizing', color: '#0f172a' },
-  { href: '#agricultural', color: '#1e293b' },
-  { href: '#battery', color: '#1B17FF' },
-  { href: '#dc-cable-sizing', color: '#14109E' },
+  { href: '#sizing', color: '#0f172a', directUrl: toolUrl('residential') },
+  { href: '#agricultural', color: '#1e293b', directUrl: toolUrl('agricultural') },
+  { href: '#battery', color: '#1B17FF', directUrl: toolUrl('battery') },
+  { href: '#dc-cable-sizing', color: '#14109E', directUrl: toolUrl('dcCable') },
 ]
 
 export default function WhyTools() {
@@ -69,6 +71,9 @@ export default function WhyTools() {
                   <h3 className="font-disp font-bold text-xl text-ink uppercase mb-3">{t2.name}</h3>
                   <p className="text-ink-muted text-sm flex-1 mb-6 leading-relaxed">{t2.what}</p>
                   <a href={t2.href} className={`${i===2||i===3?'btn-primary':'btn-teal'} justify-center`}>{t2.cta}</a>
+                  <div className="mt-2 flex justify-center">
+                    <QrShareButton url={t2.directUrl} toolName={t2.name} />
+                  </div>
                 </div>
               </Reveal>
             ))}
