@@ -1,5 +1,6 @@
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
+import LiveWeather from '@/components/LiveWeather'
 import WhyTools from '@/components/WhyTools'
 import ProblemsSection from '@/components/ProblemsSection'
 import ResidentialTool from '@/components/tools/ResidentialTool'
@@ -16,6 +17,7 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
+        <LiveWeather />
         <WhyTools />
         <ProblemsSection />
         <ResidentialTool />
