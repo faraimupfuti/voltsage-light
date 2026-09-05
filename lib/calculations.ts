@@ -1,5 +1,21 @@
-export const STANDARD_INVERTER_SIZES=[1,1.5,2,2.5,3,3.5,4,5,6,8,10,12,15,20,25,30,40,50]
+export const STANDARD_INVERTER_SIZES=[1,1.5,2,3,3.6,5,6,8,10,12,15,20,25,30,40,50,60,75,100,125,150,200,250,500,1000]
 export function roundUpToStandardInverter(r:number){return STANDARD_INVERTER_SIZES.find(s=>s>=r)??(r>0?Math.ceil(r):0)}
+/**
+ * VoltSage Inverter Size Recommendation Logic (per the Inverter Size Recommendation
+ * Logic Update spec). The recommended inverter is the LARGER of two independently
+ * rounded-to-standard-tier sizes:
+ *  - Peak-based:  peak demand x 1.30, rounded up to the nearest standard tier.
+ *  - Surge-based: surge demand rounded up to the next whole kW, halved (the model
+ *    assumes an inverter can deliver ~2x its rated capacity during surge), then
+ *    rounded up to the nearest standard tier.
+ * This ensures the inverter is adequately sized for both continuous operating
+ * demand and motor/pump/compressor starting/surge requirements.
+ */
+export function calculateInverterSize(peakKw:number,surgeKw:number):number{
+  const peakBased=roundUpToStandardInverter(peakKw*1.3)
+  const surgeBased=roundUpToStandardInverter(Math.ceil(surgeKw)/2)
+  return Math.max(peakBased,surgeBased)
+}
 export interface PSHOption{id:string;label:string;psh:number}
 export interface PSHGroup{group:string;options:PSHOption[]}
 export const PSH_TABLE:PSHGroup[]=[{group:'Zimbabwe — by province',options:[{id:'bulawayo',label:'Bulawayo',psh:5.8},{id:'harare',label:'Harare',psh:5.6},{id:'manicaland',label:'Manicaland',psh:5.5},{id:'mashcentral',label:'Mashonaland Central',psh:5.7},{id:'masheast',label:'Mashonaland East',psh:5.7},{id:'mashwest',label:'Mashonaland West',psh:5.8},{id:'masvingo',label:'Masvingo',psh:5.9},{id:'matnorth',label:'Matabeleland North',psh:6.0},{id:'matsouth',label:'Matabeleland South',psh:6.1},{id:'midlands',label:'Midlands',psh:5.8}]},{group:'Africa — Category A (6.5 h/day)',options:[{id:'algeria',label:'Algeria',psh:6.5},{id:'chad',label:'Chad',psh:6.5},{id:'egypt',label:'Egypt',psh:6.5},{id:'libya',label:'Libya',psh:6.5},{id:'mauritania',label:'Mauritania',psh:6.5},{id:'niger',label:'Niger',psh:6.5},{id:'sudan',label:'Sudan',psh:6.5}]},{group:'Africa — Category B (6.0 h/day)',options:[{id:'botswana',label:'Botswana',psh:6.0},{id:'namibia',label:'Namibia',psh:6.0},{id:'zambia',label:'Zambia',psh:6.0}]},{group:'Africa — Category C (5.8 h/day)',options:[{id:'angola',label:'Angola',psh:5.8},{id:'eswatini',label:'Eswatini',psh:5.8},{id:'malawi',label:'Malawi',psh:5.8},{id:'mozambique',label:'Mozambique',psh:5.8},{id:'southafrica',label:'South Africa',psh:5.8},{id:'tanzania',label:'Tanzania',psh:5.8}]},{group:'Africa — Category D (5.5 h/day)',options:[{id:'cameroon',label:'Cameroon',psh:5.5},{id:'cotedivoire',label:"Côte d'Ivoire",psh:5.5},{id:'ghana',label:'Ghana',psh:5.5},{id:'kenya',label:'Kenya',psh:5.5},{id:'nigeria',label:'Nigeria',psh:5.5},{id:'rwanda',label:'Rwanda',psh:5.5},{id:'senegal',label:'Senegal',psh:5.5},{id:'uganda',label:'Uganda',psh:5.5}]},{group:'Africa — Category E (5.0 h/day)',options:[{id:'burundi',label:'Burundi',psh:5.0},{id:'drc',label:'DR Congo',psh:5.0},{id:'eqguinea',label:'Equatorial Guinea',psh:5.0},{id:'gabon',label:'Gabon',psh:5.0},{id:'liberia',label:'Liberia',psh:5.0},{id:'sierraleone',label:'Sierra Leone',psh:5.0}]}]
@@ -25,7 +41,7 @@ export function calculateResidentialSizing(rows:ApplianceRow[],mode:'standard'|'
     if(a.type==='energy'){se+=r.qty*(a.runningWatt??0)*((a.surge??1)-1)}
     else{const w=r.miscWatt??(mode==='advanced'&&r.customWatt?r.customWatt:(a.watt??0));if(r.periods.some(pr=>{const{start,end}=periodRange(pr.from,pr.to);return isActiveAtSlot(tM,start,end)}))se+=r.qty*w*((a.surge??1)-1)}})
   const Ek=Ew/1000,Nk=En/1000,Dk=Ed/1000,Pk=Pm/1000,Sk=(Pm+se)/1000
-  const inv=roundUpToStandardInverter(Pk*1.3),Cb=Math.ceil((Nk>0?(Nk*autonomy)/(dod*bEff):0)*2)/2
+  const inv=calculateInverterSize(Pk,Sk),Cb=Math.ceil((Nk>0?(Nk*autonomy)/(dod*bEff):0)*2)/2
   const ah=Nk/12>0?(Cb*dod*bEff)/(Nk/12):0,pv=Math.ceil(((Dk+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
   return{Ed_kWh:Ek,Enight_kWh:Nk,Eday_kWh:Dk,Peak_kW:Pk,Surge_kW:Sk,invSize:inv,CbattRounded:Cb,PpvRounded:pv,panelCount:Math.ceil(pv*1000/pWp),autonomyHours:ah,profile:p,catTotalsWh:cats}
 }
@@ -39,7 +55,7 @@ export function calculateAgriculturalSizing(rows:AgEquipmentRow[],mode:'standard
   rows.forEach(r=>{const kw=mode==='advanced'&&r.customKW?r.customKW:r.kw;r.periods.forEach(pr=>{const h=timeToHours(pr.from,pr.to),nh=nightHoursForPeriod(pr.from,pr.to);Ed+=r.qty*kw*h;En+=r.qty*kw*nh;Ey+=r.qty*kw*(h-nh);const{start,end}=periodRange(pr.from,pr.to);for(let s=0;s<S;s++)if(isActiveAtSlot(s*H,start,end))p[s]+=r.qty*kw*1000})})
   let Pm=0,tm=0;p.forEach((w,s)=>{if(w>Pm){Pm=w;tm=s}});const tM=tm*H;let se=0
   rows.forEach(r=>{if(r.surge<=1)return;const kw=mode==='advanced'&&r.customKW?r.customKW:r.kw;if(r.periods.some(pr=>{const{start,end}=periodRange(pr.from,pr.to);return isActiveAtSlot(tM,start,end)}))se+=r.qty*kw*1000*(r.surge-1)})
-  const Pk=Pm/1000,Sk=(Pm+se)/1000,inv=roundUpToStandardInverter(Pk*1.3)
+  const Pk=Pm/1000,Sk=(Pm+se)/1000,inv=calculateInverterSize(Pk,Sk)
   const Cb=Math.ceil((En>0?(En*autonomy)/(dod*bEff):0)*2)/2,ah=En/12>0?(Cb*dod*bEff)/(En/12):0
   const pv=Math.ceil(((Ey+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
   return{Ed_kWh:Ed,Enight_kWh:En,Eday_kWh:Ey,Peak_kW:Pk,Surge_kW:Sk,invSize:inv,CbattRounded:Cb,PpvRounded:pv,panelCount:Math.ceil(pv*1000/pWp),autonomyHours:ah,profile:p,catTotalsWh:{}}
@@ -73,7 +89,7 @@ export function calculateNetworkLoadProfile(rows:NetworkLoadRow[], psh:number, a
     if(isActiveAtSlot(tM,start,end)) se+=r.qty*r.watts*(r.surge-1)
   })
   const Ek=Ed/1000, Nk=En/1000, Dk=Ey/1000, Pk=Pm/1000, Sk=(Pm+se)/1000
-  const inv=roundUpToStandardInverter(Pk*1.3)
+  const inv=calculateInverterSize(Pk,Sk)
   const Cb=Math.ceil((Nk>0?(Nk*autonomy)/(dod*bEff):0)*2)/2
   const ah=Nk/12>0?(Cb*dod*bEff)/(Nk/12):0
   const pv=Math.ceil(((Dk+(Cb>0?Cb/cEff:0))/(psh*mu))*2)/2
