@@ -1,61 +1,32 @@
-# VoltSage Solutions — Light Theme
+# VoltSage WOW Edition
 
-Built by Farai Mupfuti.
+A premium visual front-end for VoltSage, built with Next.js, Tailwind CSS, Framer Motion and Lucide.
 
-Clean white professional design of the VoltSage solar sizing platform.
-Same tools, same content, different visual design.
+## Run
 
-## Tech stack
-- Next.js 14 (App Router, TypeScript)
-- Tailwind CSS (light palette — white + orange/teal brand accents)
-- Lucide React icons
-- Framer Motion ready
-
-## Local development
 ```bash
 npm install
-npm run dev   # → http://localhost:3000
+npm run dev
 ```
 
-## Boujie (site chat assistant)
-Boujie is a chat widget (bottom-right, on every page) that answers questions about
-VoltSage and can run the same sizing/battery-runtime calculations as the free tools,
-via Claude tool-use — see `lib/boujie.ts`, `app/api/chat/route.ts`, `components/Boujie.tsx`.
+Then open `http://localhost:3000`.
 
-It needs an Anthropic API key to work:
+## Production build
+
 ```bash
-cp .env.example .env.local
-# then set ANTHROPIC_API_KEY in .env.local (get one at https://console.anthropic.com)
-```
-Without a key set, the chat widget still renders but replies with a "not configured yet" message
-instead of erroring the whole site. `ANTHROPIC_MODEL` is optional and defaults to `claude-sonnet-5`.
-
-## Deploy to GitHub
-```bash
-git init
-git add .
-git commit -m "feat: voltsage-light initial build"
-git remote add origin https://github.com/YOUR_USERNAME/voltsage-light.git
-git push -u origin main
+npm run build
+npm start
 ```
 
-## Deploy on Render
-1. Push to GitHub
-2. Render → New → Web Service → connect repo
-3. Build command: `npm install && npm run build`
-4. Start command: `npm start`
-5. Or use Docker (Render auto-detects Dockerfile)
+## Important
+This package is a visual front-end replacement. If the existing `voltsage-light` repository contains production API routes, authentication, database integrations, PDF generation, multilingual dictionaries, or a more advanced calculation engine, merge this UI into those files instead of deleting production functionality. The interactive calculator included here is intentionally an indicative front-end demo.
 
-## Deploy on Fly.io
-```bash
-fly auth login
-fly launch
-fly deploy
-```
-
-## Deploy on Heroku
-```bash
-heroku create voltsage-light
-heroku stack:set container
-git push heroku main
-```
+## Design direction
+- Cinematic deep-navy hero
+- VoltSage electric blue + cyan energy accents
+- Syne display typography, Inter body, JetBrains Mono technical figures
+- Interactive sizing preview
+- Responsive mobile navigation
+- Product-style tool cards
+- Scroll storytelling and restrained motion
+- Clear “Don’t buy solar blind. Size it first.” positioning
