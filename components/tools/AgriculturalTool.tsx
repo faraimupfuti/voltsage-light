@@ -15,8 +15,8 @@ function drawH(canvas:HTMLCanvasElement,profile:number[]){
   const ctx=canvas.getContext('2d');if(!ctx)return
   const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H)
   const mW=Math.max(1,...profile),pL=50,pB=34,pT=14,pR=14,plotW=W-pL-pR,plotH=H-pT-pB,bW=plotW/24
-  for(let i=0;i<=5;i++){const y=pT+plotH-(i/5)*plotH;ctx.strokeStyle='#e2e8f0';ctx.lineWidth=i===0?1.5:0.8;ctx.setLineDash(i===0?[]:[3,4]);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+plotW,y);ctx.stroke();ctx.setLineDash([]);const v=(i/5)*mW;ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(v>=1000?`${(v/1000).toFixed(1)}`:`${Math.round(v)}`,pL-4,y+3.5)}
-  ctx.save();ctx.translate(10,pT+plotH/2);ctx.rotate(-Math.PI/2);ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.fillText('kW',0,0);ctx.restore()
+  for(let i=0;i<=5;i++){const y=pT+plotH-(i/5)*plotH;ctx.strokeStyle='#e2e8f0';ctx.lineWidth=i===0?1.5:0.8;ctx.setLineDash(i===0?[]:[3,4]);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+plotW,y);ctx.stroke();ctx.setLineDash([]);const v=(i/5)*mW;ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(`${Math.round(v)}`,pL-4,y+3.5)}
+  ctx.save();ctx.translate(10,pT+plotH/2);ctx.rotate(-Math.PI/2);ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.fillText('W',0,0);ctx.restore()
   for(let h=0;h<24;h++){const avg=((profile[h*2]??0)+(profile[h*2+1]??0))/2,bH=(avg/mW)*plotH,x=pL+h*bW,n=h<6||h>=18;const g=ctx.createLinearGradient(0,pT+plotH-bH,0,pT+plotH);g.addColorStop(0,n?'rgba(15,23,42,0.85)':'rgba(27,23,255,0.85)');g.addColorStop(1,'rgba(0,0,0,0.02)');ctx.fillStyle=g;ctx.fillRect(x+1,pT+plotH-bH,Math.max(1,bW-2),bH)}
   ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center'
   for(let h=0;h<24;h+=3)ctx.fillText(`${String(h).padStart(2,'0')}:00`,pL+h*bW+bW/2,pT+plotH+12)
@@ -43,7 +43,7 @@ export default function AgriculturalTool(){
     try{
       const body=rows.map(r=>{const kw=mode==='advanced'&&r.customKW?r.customKW:r.kw
         const period=r.periods.map(p=>`${p.from}–${p.to}`).join(', ')
-        return[r.name,String(r.qty),`${kw} kW`,period]
+        return[r.name,String(r.qty),`${Math.round(kw*1000)} W`,period]
       })
       await generateSizingReportPDF({
         toolName:'Agricultural Solar Sizing Report',
@@ -66,7 +66,7 @@ export default function AgriculturalTool(){
     }finally{setPdfBusy(false)}
   },[result,rows,mode,psh,act])
   const add=useCallback(()=>{const eq=AG_ACTIVITIES[act].find(e=>e.id===sel);if(!eq)return;as++;setRows(p=>[...p,{rowId:as,eqId:eq.id,name:eq.name,kw:eq.kw,surge:eq.surge,qty:1,periods:[{from:'06:00',to:'18:00'}],customKW:null}])},[act,sel])
-  const addM=useCallback(()=>{if(mK<=0){alert('Enter kW>0');return};as++;setRows(p=>[...p,{rowId:as,eqId:'__misc__',name:mN||'Misc',kw:mK,surge:1,qty:1,periods:[{from:mF,to:mT}],customKW:null}])},[mK,mN,mF,mT])
+  const addM=useCallback(()=>{if(mK<=0){alert('Enter W>0');return};as++;setRows(p=>[...p,{rowId:as,eqId:'__misc__',name:mN||'Misc',kw:mK/1000,surge:1,qty:1,periods:[{from:mF,to:mT}],customKW:null}])},[mK,mN,mF,mT])
   const rm=(id:number)=>setRows(p=>p.filter(r=>r.rowId!==id))
   const upd=(id:number,patch:Partial<AgEquipmentRow>)=>setRows(p=>p.map(r=>r.rowId===id?{...r,...patch}:r))
   const addP=(id:number)=>setRows(p=>p.map(r=>r.rowId===id?{...r,periods:[...r.periods,{from:'06:00',to:'08:00'}]}:r))
@@ -80,7 +80,7 @@ export default function AgriculturalTool(){
     {target:'[data-tour="ag-location"]',title:'Choose your location',body:'Pick the province or country closest to your farm for accurate peak-sun-hour data.'},
     {target:'[data-tour="ag-add"]',title:'Add equipment',body:'Select an item from the current sector\'s list and click Add — it\'ll appear below with a sensible default running time you can adjust.'},
     {target:'[data-tour="ag-rows"]',title:'Your equipment schedule',body:'Each row shows the equipment, quantity, and when it runs (From / To). This is the full list used for sizing, across every sector you\'ve added from.'},
-    {target:'[data-tour="ag-misc"]',title:'Equipment not listed?',body:'Use "Add miscellaneous load" for anything not in our catalog — enter its power rating in kW and when it runs.'},
+    {target:'[data-tour="ag-misc"]',title:'Equipment not listed?',body:'Use "Add miscellaneous load" for anything not in our catalog — enter its power rating in W and when it runs.'},
     {target:'[data-tour="ag-chart"]',title:'Your 24-hour load profile',body:'See your farm\'s electricity use hour by hour, built from everything in your equipment schedule.'},
     {target:'[data-tour="ag-metrics"]',title:'Your recommended system',body:'Daily energy, maximum running demand, and the recommended inverter, battery and PV array — sized to handle motor starting surge, not just steady running load.'},
     {target:'[data-tour="ag-pdf"]',title:'Download your report',body:'Get a branded PDF of your full results — useful to compare against any installer quote.'},
@@ -132,7 +132,7 @@ export default function AgriculturalTool(){
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Equipment schedule</h3>
               <div className="flex gap-2" data-tour="ag-add">
                 <select value={sel} onChange={e=>setSel(e.target.value)} className="tool-input flex-1 text-xs">
-                  {AG_ACTIVITIES[act].map(eq=><option key={eq.id} value={eq.id}>{eq.name} ({eq.kw} kW)</option>)}
+                  {AG_ACTIVITIES[act].map(eq=><option key={eq.id} value={eq.id}>{eq.name} ({Math.round(eq.kw*1000)} W)</option>)}
                 </select>
                 <button onClick={add} className="btn-teal flex-shrink-0 py-2 px-4 text-xs"><Plus size={14}/> Add</button>
               </div>
@@ -142,7 +142,7 @@ export default function AgriculturalTool(){
                 {rows.map(r=>(
                   <div key={r.rowId} className="rounded-xl bg-surface-subtle border border-surface-border p-3 flex flex-col gap-2">
                     <div className="grid grid-cols-2 sm:grid-cols-[1fr_68px_96px_96px_32px] gap-2 items-center">
-                      <div className="col-span-2 sm:col-span-1 font-mono text-[11px] text-ink truncate">{r.name}<span className="text-ink-faint ml-1 text-[10px]">({mode==='advanced'&&r.customKW?r.customKW:r.kw}kW)</span></div>
+                      <div className="col-span-2 sm:col-span-1 font-mono text-[11px] text-ink truncate">{r.name}<span className="text-ink-faint ml-1 text-[10px]">({Math.round((mode==='advanced'&&r.customKW?r.customKW:r.kw)*1000)}W)</span></div>
                       <input type="number" min={1} value={r.qty===0?'':r.qty} onChange={e=>{const v=e.target.value;upd(r.rowId,{qty:v===''?0:Math.max(0,parseInt(v)||0)})}} onBlur={()=>{if(!r.qty||r.qty<1)upd(r.rowId,{qty:1})}} className="tool-input text-center text-sm font-semibold !px-1"/>
                       <input type="time" value={r.periods[0]?.from??'06:00'} onChange={e=>updP(r.rowId,0,'from',e.target.value)} className="tool-input text-xs"/>
                       <input type="time" value={r.periods[0]?.to??'18:00'} onChange={e=>updP(r.rowId,0,'to',e.target.value)} className="tool-input text-xs"/>
@@ -150,7 +150,7 @@ export default function AgriculturalTool(){
                     </div>
                     {mode==='advanced'&&(
                       <div className="flex flex-col gap-2 pl-2 border-l-2 border-brand-green/30">
-                        <div className="flex items-center gap-2 flex-wrap"><Lbl c="Custom power (kW)"/><input type="number" min={0.1} step={0.1} placeholder={String(r.kw)} value={r.customKW??''} onChange={e=>upd(r.rowId,{customKW:e.target.value===''?null:parseFloat(e.target.value)})} className="tool-input text-xs w-24"/>{r.customKW&&<span className="text-[10px] font-mono text-amber-600">override: {r.customKW} kW</span>}</div>
+                        <div className="flex items-center gap-2 flex-wrap"><Lbl c="Custom power (W)"/><input type="number" min={10} step={10} placeholder={String(Math.round(r.kw*1000))} value={r.customKW?Math.round(r.customKW*1000):''} onChange={e=>upd(r.rowId,{customKW:e.target.value===''?null:parseFloat(e.target.value)/1000})} className="tool-input text-xs w-24"/>{r.customKW&&<span className="text-[10px] font-mono text-amber-600">override: {Math.round(r.customKW*1000)} W</span>}</div>
                         {r.periods.slice(1).map((p,idx)=>(<div key={idx} className="flex items-center gap-2 flex-wrap"><Lbl c={`Period ${idx+2}`}/><span className="text-[10px] font-mono text-ink-faint">From</span><input type="time" value={p.from} onChange={e=>updP(r.rowId,idx+1,'from',e.target.value)} className="tool-input text-xs w-24"/><span className="text-[10px] font-mono text-ink-faint">To</span><input type="time" value={p.to} onChange={e=>updP(r.rowId,idx+1,'to',e.target.value)} className="tool-input text-xs w-24"/><button onClick={()=>rmP(r.rowId,idx+1)} className="text-ink-faint hover:text-red-500"><X size={12}/></button></div>))}
                         <button onClick={()=>addP(r.rowId)} className="self-start flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase border border-brand-green/40 text-brand-green hover:bg-green-50 transition-all"><Clock size={11}/> Add another period</button>
                       </div>
@@ -163,7 +163,7 @@ export default function AgriculturalTool(){
                 <summary className="px-4 py-3 text-xs font-mono uppercase tracking-wider text-brand-green cursor-pointer bg-green-50 list-none flex items-center gap-2"><Plus size={12}/> Add miscellaneous load</summary>
                 <div className="p-4 bg-white grid grid-cols-2 gap-3">
                   <div className="col-span-2"><Lbl c="Description"/><input value={mN} onChange={e=>setMN(e.target.value)} placeholder="e.g. Farm office lights" className="tool-input text-xs"/></div>
-                  <div><Lbl c="Power (kW)"/><input type="number" min={0} step={0.1} value={mK===0?'':mK} onChange={e=>{const v=e.target.value;setMK(v===''?0:parseFloat(v)||0)}} className="tool-input text-xs"/></div>
+                  <div><Lbl c="Power (W)"/><input type="number" min={0} step={10} value={mK===0?'':mK} onChange={e=>{const v=e.target.value;setMK(v===''?0:parseFloat(v)||0)}} className="tool-input text-xs"/></div>
                   <div><Lbl c="Time of use"/><div className="flex gap-1"><div className="flex-1"><Lbl c="From"/><input type="time" value={mF} onChange={e=>setMF(e.target.value)} className="tool-input text-xs"/></div><div className="flex-1"><Lbl c="To"/><input type="time" value={mT} onChange={e=>setMT(e.target.value)} className="tool-input text-xs"/></div></div></div>
                   <div className="col-span-2"><button onClick={addM} className="btn-teal w-full justify-center">Add miscellaneous load</button></div>
                 </div>
