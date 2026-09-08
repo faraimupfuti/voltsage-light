@@ -18,7 +18,7 @@ function solarOutlook(c: WeatherData['current']) {
   return { label: 'Cloudy skies — expect reduced solar output today', tone: 'slate' as const }
 }
 
-const TONE_DOT: Record<string, string> = { green: '#16a34a', amber: '#1B17FF', slate: '#64748b' }
+const TONE_DOT: Record<string, string> = { green: '#16a34a', amber: '#2621FF', slate: '#64748b' }
 
 export default function LiveWeather() {
   const [data, setData] = useState<WeatherData | null>(null)
@@ -45,7 +45,7 @@ export default function LiveWeather() {
             ) : (
               <>
                 <div className="flex items-center gap-4 flex-shrink-0">
-                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 sun-pulse" style={{ background: data.current.isDay ? 'linear-gradient(135deg,#FDE047,#F59E0B)' : 'linear-gradient(135deg,#334155,#0f172a)' }}>
+                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 sun-pulse" style={{ background: data.current.isDay ? 'linear-gradient(135deg,#FDE047,#F59E0B)' : 'linear-gradient(135deg,#334155,#0B1220)' }}>
                     {data.current.icon ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={data.current.icon} alt={data.current.description} className="w-9 h-9 object-contain drop-shadow" />

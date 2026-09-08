@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
       <main className="bg-white">
         <section className="pt-32 pb-20 max-w-3xl mx-auto px-4 sm:px-6">
           <div className="section-eyebrow">Legal</div>
-          <h1 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-3">Privacy Policy</h1>
+          <h1 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink leading-tight mb-3">Privacy Policy</h1>
           <p className="text-sm text-ink-faint font-mono mb-12">Effective date: August 2026</p>
 
           <p className="text-base text-ink-muted leading-relaxed mb-12">

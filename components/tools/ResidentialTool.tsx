@@ -7,12 +7,12 @@ import{LeadLock}from'@/components/AccessGate'
 import{useLang}from'@/components/LanguageProvider'
 import TourGuide,{TourHandle,TourStep}from'@/components/TourGuide'
 import UseCaseStrip from'@/components/tools/UseCaseStrip'
-const CC:Record<string,string>={'Lighting':'#1B17FF','Entertainment & Electronics':'#4640FF','Refrigeration':'#14109E','Water Systems':'#8D88FF','Kitchen':'#0A0880','Climate Control':'#312ECC','Laundry':'#64748b','High Power Loads':'#0f172a','Miscellaneous':'#94a3b8'}
+const CC:Record<string,string>={'Lighting':'#2621FF','Entertainment & Electronics':'#4C46FF','Refrigeration':'#171254','Water Systems':'#8D88FF','Kitchen':'#0C0940','Climate Control':'#312ECC','Laundry':'#64748b','High Power Loads':'#0B1220','Miscellaneous':'#94a3b8'}
 const CATS=[...new Set(APPLIANCE_CATALOG.map(a=>a.cat))]
 let rs=0
 function Lbl({c,span}:{c:React.ReactNode;span?:boolean}){return<span className={`block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1 ${span?'col-span-2 sm:col-span-1':''}`}>{c}</span>}
 function RC({label,value,unit,accent=false,amber=false}:{label:string;value:string;unit:string;accent?:boolean;amber?:boolean}){
-  const col=amber?'#1B17FF':accent?'#0f172a':'#1e293b'
+  const col=amber?'#2621FF':accent?'#0B1220':'#1A2030'
   return<div className="bg-surface-subtle rounded-xl p-4 border border-surface-border"><div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-1">{label}</div><div className="font-mono font-bold text-2xl leading-none" style={{color:col}}>{value}<span className="text-sm font-normal text-ink-faint ml-1">{unit}</span></div></div>
 }
 function drawHist(canvas:HTMLCanvasElement,profile:number[]){
@@ -21,7 +21,7 @@ function drawHist(canvas:HTMLCanvasElement,profile:number[]){
   const mW=Math.max(1,...profile),pL=46,pB=32,pT=14,pR=14,plotW=W-pL-pR,plotH=H-pT-pB,bW=plotW/24
   for(let i=0;i<=5;i++){const y=pT+plotH-(i/5)*plotH;ctx.strokeStyle='#e2e8f0';ctx.lineWidth=i===0?1.5:0.8;ctx.setLineDash(i===0?[]:[3,4]);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+plotW,y);ctx.stroke();ctx.setLineDash([]);const v=(i/5)*mW;ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(`${Math.round(v)}`,pL-4,y+3.5)}
   ctx.save();ctx.translate(10,pT+plotH/2);ctx.rotate(-Math.PI/2);ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.fillText('W',0,0);ctx.restore()
-  for(let h=0;h<24;h++){const avg=((profile[h*2]??0)+(profile[h*2+1]??0))/2,bH=(avg/mW)*plotH,x=pL+h*bW,n=h<6||h>=18;const g=ctx.createLinearGradient(0,pT+plotH-bH,0,pT+plotH);g.addColorStop(0,n?'rgba(15,23,42,0.85)':'rgba(27,23,255,0.85)');g.addColorStop(1,'rgba(0,0,0,0.02)');ctx.fillStyle=g;ctx.fillRect(x+1,pT+plotH-bH,Math.max(1,bW-2),bH)}
+  for(let h=0;h<24;h++){const avg=((profile[h*2]??0)+(profile[h*2+1]??0))/2,bH=(avg/mW)*plotH,x=pL+h*bW,n=h<6||h>=18;const g=ctx.createLinearGradient(0,pT+plotH-bH,0,pT+plotH);g.addColorStop(0,n?'rgba(11,18,32,0.85)':'rgba(38,33,255,0.85)');g.addColorStop(1,'rgba(0,0,0,0.02)');ctx.fillStyle=g;ctx.fillRect(x+1,pT+plotH-bH,Math.max(1,bW-2),bH)}
   ctx.fillStyle='#94a3b8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center'
   for(let h=0;h<24;h+=3)ctx.fillText(`${String(h).padStart(2,'0')}:00`,pL+h*bW+bW/2,pT+plotH+12)
   ctx.fillText('Hour of day',pL+plotW/2,pT+plotH+26)
@@ -94,7 +94,7 @@ export default function ResidentialTool(){
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
           <div className="section-eyebrow">Premium tool — Residential &amp; Small Commercial</div>
-          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Home &amp; Office Energy Assessment</h2>
+          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink leading-tight mb-4">Home &amp; Office Energy Assessment</h2>
           <p className="text-ink-muted text-base leading-relaxed">Add your appliances and operating times. This load assessment tool builds a real 24-hour load profile and delivers full system sizing — inverter, battery and PV array — using the same methodology a qualified engineer uses.</p>
         </div>
         <UseCaseStrip
@@ -178,7 +178,7 @@ export default function ResidentialTool(){
               <div className="bg-surface-subtle rounded-xl p-3 border border-surface-border" data-tour="res-chart">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono text-ink-faint uppercase">24-hour load profile</span>
-                  <div className="flex gap-3 text-[9px] font-mono text-ink-faint"><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#0f172a'}}/>Night</span><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#1B17FF'}}/>Day</span></div>
+                  <div className="flex gap-3 text-[9px] font-mono text-ink-faint"><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#0B1220'}}/>Night</span><span><span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{background:'#2621FF'}}/>Day</span></div>
                 </div>
                 <canvas ref={hRef} width={560} height={160} className="w-full rounded-lg" style={{height:120}}/>
                 {!result&&<div className="text-center text-ink-faint font-mono text-xs py-2">Add appliances to see your load profile →</div>}

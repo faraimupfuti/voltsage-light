@@ -91,7 +91,7 @@ export default function CookieConsent() {
                 aria-pressed={analytics}
                 aria-label="Toggle analytics cookies"
                 className="w-10 h-6 rounded-full flex items-center px-0.5 flex-shrink-0 transition-colors"
-                style={{ background: analytics ? '#1B17FF' : '#cbd5e1' }}
+                style={{ background: analytics ? '#2621FF' : '#cbd5e1' }}
               >
                 <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${analytics ? 'translate-x-4' : 'translate-x-0'}`} />
               </button>

@@ -70,10 +70,10 @@ export default function BatteryRuntimeTool() {
   }, [capacity, dod, eff, load, result])
 
   const sliders = [
-    { label:'Battery capacity', unit:'kWh', val:capacity, set:setCapacity, min:1, max:100, step:0.5, color:'#1B17FF' },
-    { label:'Depth of discharge (DoD)', unit:'%', val:dod, set:setDod, min:10, max:100, step:5, color:'#0f172a', hint:'Lithium = 80% · Lead-acid = 50%' },
-    { label:'Battery efficiency', unit:'%', val:eff, set:setEff, min:60, max:100, step:1, color:'#1e293b', hint:'Lithium = 95% · Lead-acid = 80–85%' },
-    { label:'Connected load', unit:'kW', val:load, set:setLoad, min:0.1, max:30, step:0.1, color:'#1B17FF', hint:'Everything switched on simultaneously' },
+    { label:'Battery capacity', unit:'kWh', val:capacity, set:setCapacity, min:1, max:100, step:0.5, color:'#2621FF' },
+    { label:'Depth of discharge (DoD)', unit:'%', val:dod, set:setDod, min:10, max:100, step:5, color:'#0B1220', hint:'Lithium = 80% · Lead-acid = 50%' },
+    { label:'Battery efficiency', unit:'%', val:eff, set:setEff, min:60, max:100, step:1, color:'#1A2030', hint:'Lithium = 95% · Lead-acid = 80–85%' },
+    { label:'Connected load', unit:'kW', val:load, set:setLoad, min:0.1, max:30, step:0.1, color:'#2621FF', hint:'Everything switched on simultaneously' },
   ]
 
   const tourRef = useRef<TourHandle>(null)
@@ -93,7 +93,7 @@ export default function BatteryRuntimeTool() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
           <div className="section-eyebrow">Premium tool — Battery Runtime</div>
-          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">
+          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink leading-tight mb-4">
             Battery Runtime<br /><span className="brand-text-orange">Assessment</span>
           </h2>
           <p className="text-ink-muted text-base leading-relaxed">
@@ -160,8 +160,8 @@ export default function BatteryRuntimeTool() {
 
               <LeadLock>
               <div className="flex flex-wrap justify-center gap-10 mb-10" data-tour="batt-gauges">
-                <RingGauge pct={runtimePct} color="#1B17FF" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
-                <RingGauge pct={usablePct}  color="#0f172a" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
+                <RingGauge pct={runtimePct} color="#2621FF" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
+                <RingGauge pct={usablePct}  color="#0B1220" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
               </div>
 
               {/* Formula */}
@@ -170,9 +170,9 @@ export default function BatteryRuntimeTool() {
                 <div className="space-y-2 font-mono text-xs text-ink-muted">
                   <div className="flex justify-between"><span>Rated capacity</span><span className="text-ink font-semibold">{capacity} kWh</span></div>
                   <div className="flex justify-between"><span>× DoD ({dod}%)</span><span className="text-ink font-semibold">{(capacity*dod/100).toFixed(2)} kWh</span></div>
-                  <div className="flex justify-between"><span>× efficiency ({eff}%)</span><span className="font-bold" style={{ color:'#0f172a' }}>{result.usableKWh.toFixed(2)} kWh usable</span></div>
+                  <div className="flex justify-between"><span>× efficiency ({eff}%)</span><span className="font-bold" style={{ color:'#0B1220' }}>{result.usableKWh.toFixed(2)} kWh usable</span></div>
                   <div className="h-px bg-surface-border my-1" />
-                  <div className="flex justify-between"><span>÷ load ({load.toFixed(1)} kW)</span><span className="font-bold" style={{ color:'#1B17FF' }}>{result.runtimeHours.toFixed(1)} hours</span></div>
+                  <div className="flex justify-between"><span>÷ load ({load.toFixed(1)} kW)</span><span className="font-bold" style={{ color:'#2621FF' }}>{result.runtimeHours.toFixed(1)} hours</span></div>
                 </div>
               </div>
 
@@ -210,7 +210,7 @@ export default function BatteryRuntimeTool() {
           ].map((c,i)=>(
             <div key={i} className="card p-5">
               <div className="text-brand-teal mb-3">{c.icon}</div>
-              <h4 className="font-disp font-bold text-base uppercase text-ink mb-2">{c.title}</h4>
+              <h4 className="font-disp font-bold text-base text-ink mb-2">{c.title}</h4>
               <p className="text-ink-muted text-sm">{c.body}</p>
             </div>
           ))}

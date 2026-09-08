@@ -215,7 +215,7 @@ export default function DCCableSizingTool() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-10">
           <div className="section-eyebrow">Premium tool — DC Cable Sizing</div>
-          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">
+          <h2 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink leading-tight mb-4">
             DC Cable Sizing<br /><span className="brand-text-teal">Verification Tool</span>
           </h2>
           <p className="text-ink-muted text-base leading-relaxed">
@@ -425,7 +425,7 @@ export default function DCCableSizingTool() {
           ].map((c, i) => (
             <div key={i} className="card p-5">
               <div className="text-brand-teal mb-3">{c.icon}</div>
-              <h4 className="font-disp font-bold text-base uppercase text-ink mb-2">{c.title}</h4>
+              <h4 className="font-disp font-bold text-base text-ink mb-2">{c.title}</h4>
               <p className="text-ink-muted text-sm">{c.body}</p>
             </div>
           ))}

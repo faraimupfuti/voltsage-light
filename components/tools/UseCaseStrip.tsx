@@ -4,7 +4,7 @@ export default function UseCaseStrip({ audience, useCases }: { audience: string;
   return (
     <div className="rounded-2xl border border-surface-border bg-white p-5 mb-8">
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(27,23,255,.08)' }}>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(38,33,255,.08)' }}>
           <Users size={16} className="text-brand-orange" />
         </div>
         <div>

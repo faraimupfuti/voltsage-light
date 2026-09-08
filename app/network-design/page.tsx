@@ -26,7 +26,7 @@ let rid = 1000
 function RC({label,value,unit,accent=false}:{label:string;value:string;unit:string;accent?:boolean}){
   return <div className="bg-surface-subtle rounded-xl p-3.5 border border-surface-border">
     <div className="text-[9px] font-mono uppercase tracking-widest text-ink-faint mb-1">{label}</div>
-    <div className="font-mono font-bold text-xl leading-none" style={{color:accent?'#1B17FF':'#0f172a'}}>{value}<span className="text-xs font-normal text-ink-faint ml-1">{unit}</span></div>
+    <div className="font-mono font-bold text-xl leading-none" style={{color:accent?'#2621FF':'#0B1220'}}>{value}<span className="text-xs font-normal text-ink-faint ml-1">{unit}</span></div>
   </div>
 }
 
@@ -236,7 +236,7 @@ export default function NetworkDesignPage(){
         <section className="pt-32 pb-24 max-w-5xl mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="section-eyebrow">Premium Design Tool</div>
-            <h1 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink uppercase leading-tight mb-4">Low-Voltage <span className="brand-text">Network Design</span></h1>
+            <h1 className="font-disp font-extrabold text-4xl sm:text-5xl text-ink leading-tight mb-4">Low-Voltage <span className="brand-text">Network Design</span></h1>
             <p className="text-ink-muted text-lg leading-relaxed max-w-2xl mb-10">
               Takes your load profile and turns it into a site-specific energy system design — accounting for your
               existing electricity supply and what you actually want the system to achieve, not just a generic size.

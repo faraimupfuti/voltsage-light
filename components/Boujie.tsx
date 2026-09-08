@@ -104,14 +104,14 @@ export default function Boujie() {
         onClick={() => setOpen(o => !o)}
         aria-label={open ? 'Close chat' : 'Chat with Boujie'}
         className="fixed bottom-5 right-5 z-[140] w-14 h-14 rounded-full flex items-center justify-center text-white shadow-brand transition-transform hover:scale-105 active:scale-95"
-        style={{ background: 'linear-gradient(135deg,#1B17FF,#14109E)' }}
+        style={{ background: 'linear-gradient(135deg,#2621FF,#171254)' }}
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
       </button>
 
       {open && (
         <div className="fixed bottom-24 right-5 z-[140] w-[92vw] sm:w-[380px] max-w-[380px] h-[70vh] max-h-[560px] rounded-2xl bg-white border border-surface-border shadow-card-lg flex flex-col overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b border-surface-border" style={{ background: 'linear-gradient(135deg,#1B17FF,#14109E)' }}>
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b border-surface-border" style={{ background: 'linear-gradient(135deg,#2621FF,#171254)' }}>
             <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0"><Sparkles size={16} className="text-white" /></div>
             <div className="min-w-0">
               <div className="font-disp font-bold text-white text-sm leading-none mb-1">Boujie</div>
@@ -123,7 +123,7 @@ export default function Boujie() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-3.5 py-4 space-y-3">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'text-white' : 'bg-surface-subtle text-ink border border-surface-border'}`} style={m.role === 'user' ? { background: 'linear-gradient(135deg,#1B17FF,#14109E)' } : undefined}>
+                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'text-white' : 'bg-surface-subtle text-ink border border-surface-border'}`} style={m.role === 'user' ? { background: 'linear-gradient(135deg,#2621FF,#171254)' } : undefined}>
                   {m.content}
                   {m.toolCalls?.map((tc, j) => <ToolResultCard key={j} tc={tc} />)}
                 </div>
@@ -155,7 +155,7 @@ export default function Boujie() {
               disabled={busy || !input.trim()}
               aria-label="Send"
               className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-40 transition-opacity"
-              style={{ background: 'linear-gradient(135deg,#1B17FF,#14109E)' }}
+              style={{ background: 'linear-gradient(135deg,#2621FF,#171254)' }}
             >
               <Send size={16} />
             </button>

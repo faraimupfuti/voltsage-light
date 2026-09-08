@@ -18,9 +18,9 @@ function buildQrCode(url: string) {
     qrOptions: { errorCorrectionLevel: 'H' },
     image: '/logo-icon.png',
     imageOptions: { crossOrigin: 'anonymous', margin: 10, imageSize: 0.4, hideBackgroundDots: true },
-    dotsOptions: { type: 'dots', gradient: { type: 'linear', rotation: Math.PI / 4, colorStops: [{ offset: 0, color: '#1B17FF' }, { offset: 1, color: '#14109E' }] } },
-    cornersSquareOptions: { type: 'extra-rounded', color: '#0f172a' },
-    cornersDotOptions: { type: 'dot', color: '#1B17FF' },
+    dotsOptions: { type: 'dots', gradient: { type: 'linear', rotation: Math.PI / 4, colorStops: [{ offset: 0, color: '#2621FF' }, { offset: 1, color: '#171254' }] } },
+    cornersSquareOptions: { type: 'extra-rounded', color: '#0B1220' },
+    cornersDotOptions: { type: 'dot', color: '#2621FF' },
     backgroundOptions: { color: '#ffffff' },
   })
 }
