@@ -15,10 +15,10 @@ import {
   designEarthing, EarthingDesign,
   buildScenarioBOQ, BoqRow,
   DeratingConditions, DEFAULT_DERATING, CABLE_DERATING_AMBIENT_OPTIONS, CABLE_DERATING_GROUPING, CABLE_DERATING_INSTALL,
-  PSH_TABLE, findPSH,
 } from '@/lib/calculations'
 import { Plus, Trash2, ChevronDown, ChevronRight, Check, ArrowRight, ArrowLeft, Zap, FileText, Sparkles, Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { generateSizingReportPDF } from '@/lib/pdfReport'
+import { usePshSelection, PshSelect, LocationStatus, useReportDetails } from '@/components/tools/SiteTools'
 
 const STEPS = ['Loads', 'Site Supply', 'Energy Goals', 'Design']
 let rid = 1000
@@ -180,7 +180,9 @@ function SystemDiagram({site,phase,inverter,battOpt,pvModule,pvArray,acCircuit,p
 export default function NetworkDesignPage(){
   const [step,setStep]=useState(1)
   const [rows,setRows]=useState<NetworkLoadRow[]>([])
-  const [psh,setPsh]=useState('harare')
+  const sel=usePshSelection('harare')
+  const pshVal=sel.resolved.psh
+  const report=useReportDetails()
   const [site,setSite]=useState<SiteSupplyOption|null>(null)
   const [phase,setPhase]=useState<SitePhase>('1')
   const [siteNote,setSiteNote]=useState('')
@@ -195,7 +197,7 @@ export default function NetworkDesignPage(){
       const raw=localStorage.getItem('voltsage_network_transfer')
       if(raw){
         const data=JSON.parse(raw)
-        if(data.rows&&data.rows.length){setRows(data.rows);setImportedFrom(data.source);if(data.psh)setPsh(data.psh)}
+        if(data.rows&&data.rows.length){setRows(data.rows);setImportedFrom(data.source);if(data.psh)sel.setId(data.psh)}
       }
     }catch{}
   },[])
@@ -205,7 +207,7 @@ export default function NetworkDesignPage(){
   const removeRow=useCallback((id:number)=>setRows(p=>p.filter(r=>r.id!==id)),[])
 
   const validRows=useMemo(()=>rows.filter(r=>r.name.trim()&&r.watts>0),[rows])
-  const baseline=useMemo(()=>calculateNetworkLoadProfile(validRows,findPSH(psh).psh),[validRows,psh])
+  const baseline=useMemo(()=>calculateNetworkLoadProfile(validRows,pshVal),[validRows,pshVal])
 
   const eligibleGoals=useMemo(()=>site?GOAL_ELIGIBILITY[site]:[],[site])
   const conditionalSet=useMemo(()=>new Set(site?CONDITIONAL_GOALS[site]||[]:[]),[site])
@@ -279,14 +281,10 @@ export default function NetworkDesignPage(){
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-mono uppercase text-ink-faint">Location</span>
-                        <div className="relative">
-                          <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs !pr-7 min-w-[160px] sm:min-w-[200px]">
-                            {PSH_TABLE.map(g=><optgroup key={g.group} label={g.group}>{g.options.map(o=><option key={o.id} value={o.id}>{o.label} — {o.psh} PSH</option>)}</optgroup>)}
-                          </select>
-                          <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/>
-                        </div>
+                        <PshSelect sel={sel} className="min-w-[160px] sm:min-w-[200px]"/>
                       </div>
                     </div>
+                    <div className="mb-4 rounded-lg overflow-hidden border border-surface-border"><LocationStatus sel={sel}/></div>
 
                     {rows.length>0 && <div className="grid grid-cols-2 sm:grid-cols-[1fr_56px_72px_56px_84px_84px_32px] gap-2 px-1 mb-2">
                       {['Load name','Qty','Watts','Surge×','From','To',''].map((h,i)=><span key={i} className={`block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1 ${i===0?'col-span-2 sm:col-span-1':''}`}>{h}</span>)}
@@ -387,6 +385,8 @@ export default function NetworkDesignPage(){
                         <div><span className="block text-ink-faint text-[10px] uppercase">PV array</span><span className="text-ink font-semibold">{baseline.PpvRounded.toFixed(2)} kWp</span></div>
                       </div>
                     </div>
+
+                    <div className="mb-8">{report.form}</div>
 
                     <div className="rounded-xl border border-surface-border p-4 mb-8 bg-white">
                       <div className="text-[10px] font-mono uppercase tracking-widest text-ink-faint mb-3">Site installation conditions (applies to the draft electrical design below)</div>
@@ -574,11 +574,13 @@ export default function NetworkDesignPage(){
                                     <div className="flex items-center justify-between mb-3">
                                       <span className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">Bill of quantities (draft)</span>
                                       <button
-                                        onClick={async()=>{
+                                        onClick={()=>report.run(async client=>{
                                           await generateSizingReportPDF({
+                                            preparedFor:client,
+                                            psh:pshVal,
                                             toolName:'VoltSage Premium Engineering Report',
                                             subtitle:`${ENERGY_GOALS.find(g=>g.id===sc.goal)?.label ?? sc.goal} design scenario — preliminary system architecture and bill of quantities.`,
-                                            location:findPSH(psh).label,
+                                            location:sel.resolved.label,
                                             metrics:[
                                               {label:'Inverter',value:invRes.inverter!.tierId,unit:`${invRes.inverter!.capacityKva} kVA`},
                                               {label:'Battery',value:selectedBattOpt?selectedBattOpt.tierId:'—',unit:selectedBattOpt?`${selectedBattOpt.resultingKwh} kWh`:''},
@@ -590,7 +592,7 @@ export default function NetworkDesignPage(){
                                             ],
                                             disclaimer:"This is a preliminary design generated from a generic equipment database using provisional sizing rules pending VoltSage's formal Electrical Design Specification. Final equipment selection, cable sizing, protection and earthing must be completed and verified by a qualified Electrical Engineer before installation.",
                                           })
-                                        }}
+                                        })}
                                         className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-brand-teal hover:text-teal-700 transition-colors"
                                       ><FileText size={12}/> Download report (PDF)</button>
                                     </div>

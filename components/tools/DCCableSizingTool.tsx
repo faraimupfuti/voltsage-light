@@ -15,6 +15,7 @@ import { generateSizingReportPDF } from '@/lib/pdfReport'
 import { LeadLock } from '@/components/AccessGate'
 import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
 import UseCaseStrip from '@/components/tools/UseCaseStrip'
+import { useReportDetails } from '@/components/tools/SiteTools'
 
 type Tab = 'pv' | 'battery'
 type Mode = 'standard' | 'advanced'
@@ -132,13 +133,15 @@ export default function DCCableSizingTool() {
   const rec: DcCableCandidateResult | null = result.recommended
 
   const [pdfBusy, setPdfBusy] = useState(false)
-  const downloadPDF = useCallback(async () => {
+  const report = useReportDetails()
+  const downloadPDF = useCallback(() => report.run(async client => {
     setPdfBusy(true)
     try {
       if (tab === 'pv') {
         const r = pvResult
         const rc = r.recommended
         await generateSizingReportPDF({
+          preparedFor: client,
           toolName: 'PV Module Cable Sizing Report',
           subtitle: `Cable verification for the PV string/array to inverter MPPT connection. Assumed cable type: ${ASSUMED_CABLE_TYPE}.`,
           mode,
@@ -168,6 +171,7 @@ export default function DCCableSizingTool() {
         const r = battResult
         const rc = r.recommended
         await generateSizingReportPDF({
+          preparedFor: client,
           toolName: 'Battery Cable Sizing Report',
           subtitle: `Cable verification for the battery to inverter connection. Assumed cable type: ${ASSUMED_CABLE_TYPE}.`,
           mode,
@@ -195,7 +199,7 @@ export default function DCCableSizingTool() {
         })
       }
     } finally { setPdfBusy(false) }
-  }, [tab, pvResult, battResult, pvLength, pvCurrent, pvVmin, pvVmax, battLength, battCurrent, battVoltage, mode])
+  }), [tab, pvResult, battResult, pvLength, pvCurrent, pvVmin, pvVmax, battLength, battCurrent, battVoltage, mode, report.run])
 
   const tourRef = useRef<TourHandle>(null)
   const TOUR_STEPS: TourStep[] = [
@@ -382,6 +386,7 @@ export default function DCCableSizingTool() {
                         The selected cable satisfies the VoltSage current-carrying and voltage-drop criteria under the specified conditions.
                       </div>
 
+                      {report.form}
                       <button onClick={downloadPDF} disabled={pdfBusy} data-tour="dc-pdf" className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">
                         {pdfBusy ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />} Download PDF report
                       </button>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { AccessProvider } from '@/components/AccessGate'
+import { SiteProvider } from '@/components/SiteProvider'
 import { LanguageProvider } from '@/components/LanguageProvider'
 import Boujie from '@/components/Boujie'
 import { SITE_URL } from '@/lib/site'
@@ -94,7 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Umami analytics */}
         <Script defer src="https://cloud.umami.is/script.js" data-website-id="8943deb8-9bcf-418b-aa6d-7c88175e3ca8" strategy="afterInteractive" />
       </head>
-      <body className="bg-white text-slate-900 antialiased"><LanguageProvider><AccessProvider>{children}<Boujie/></AccessProvider></LanguageProvider></body>
+      <body className="bg-white text-slate-900 antialiased"><LanguageProvider><AccessProvider><SiteProvider>{children}<Boujie/></SiteProvider></AccessProvider></LanguageProvider></body>
     </html>
   )
 }

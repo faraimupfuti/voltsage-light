@@ -1,12 +1,13 @@
 'use client'
 import{useState,useCallback,useEffect,useRef}from'react'
 import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2,HelpCircle}from'lucide-react'
-import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,PSH_TABLE,findPSH,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
+import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
 import{LeadLock}from'@/components/AccessGate'
 import{useLang}from'@/components/LanguageProvider'
 import TourGuide,{TourHandle,TourStep}from'@/components/TourGuide'
 import UseCaseStrip from'@/components/tools/UseCaseStrip'
+import{usePshSelection,PshSelect,LocationStatus,useReportDetails}from'@/components/tools/SiteTools'
 const IC:Record<string,string>={'Irrigation':'💧','Dairy Farming':'🐄','Poultry Farming':'🐓','Piggery':'🐷','Greenhouse Farming':'🌱','Crop Processing':'🌾','Mixed Farming':'🚜'}
 let as=0
 function Lbl({c,span}:{c:React.ReactNode;span?:boolean}){return<span className={`block text-[10px] font-mono uppercase tracking-wider text-ink-faint mb-1 ${span?'col-span-2 sm:col-span-1':''}`}>{c}</span>}
@@ -26,7 +27,9 @@ function drawH(canvas:HTMLCanvasElement,profile:number[]){
 export default function AgriculturalTool(){
   const{t}=useLang()
   const[act,setAct]=useState<AgActivity>('Irrigation')
-  const[psh,setPsh]=useState('harare')
+  const psel=usePshSelection('harare')
+  const pshVal=psel.resolved.psh
+  const report=useReportDetails()
   const[mode,setMode]=useState<'standard'|'advanced'>('standard')
   const[rows,setRows]=useState<AgEquipmentRow[]>([])
   const[sel,setSel]=useState(AG_ACTIVITIES['Irrigation'][0].id)
@@ -34,11 +37,12 @@ export default function AgriculturalTool(){
   const[result,setResult]=useState<SizingResult|null>(null)
   const[pdfBusy,setPdfBusy]=useState(false)
   const hRef=useRef<HTMLCanvasElement>(null)
-  useEffect(()=>{if(!rows.length){setResult(null);return};setResult(calculateAgriculturalSizing(rows,mode,findPSH(psh).psh,1))},[rows,psh,mode])
+  useEffect(()=>{if(!rows.length){setResult(null);return};setResult(calculateAgriculturalSizing(rows,mode,pshVal,1))},[rows,pshVal,mode])
   useEffect(()=>{if(!hRef.current)return;if(!result){hRef.current.getContext('2d')?.clearRect(0,0,600,180);return};drawH(hRef.current,result.profile)},[result])
   useEffect(()=>{const eq=AG_ACTIVITIES[act];if(eq.length)setSel(eq[0].id)},[act])
-  const downloadPDF=useCallback(async()=>{
+  const downloadPDF=useCallback(()=>{
     if(!result)return
+    return report.run(async client=>{
     setPdfBusy(true)
     try{
       const body=rows.map(r=>{const kw=mode==='advanced'&&r.customKW?r.customKW:r.kw
@@ -48,7 +52,9 @@ export default function AgriculturalTool(){
       await generateSizingReportPDF({
         toolName:'Agricultural Solar Sizing Report',
         subtitle:`Load profile and recommended inverter, battery and PV array sizing for a ${act.toLowerCase()} operation.`,
-        location:findPSH(psh).label,
+        location:psel.resolved.label,
+        psh:pshVal,
+        preparedFor:client,
         mode,
         metrics:[
           {label:'Daily energy',value:result.Ed_kWh.toFixed(2),unit:'kWh/day'},
@@ -64,7 +70,8 @@ export default function AgriculturalTool(){
         disclaimer:'Inverter sized at 1.3× peak running demand to nearest standard size. Final system sizing and equipment selection must be verified by a qualified engineer before installation.',
       })
     }finally{setPdfBusy(false)}
-  },[result,rows,mode,psh,act])
+    })
+  },[result,rows,mode,psel.resolved.label,pshVal,act,report.run])
   const add=useCallback(()=>{const eq=AG_ACTIVITIES[act].find(e=>e.id===sel);if(!eq)return;as++;setRows(p=>[...p,{rowId:as,eqId:eq.id,name:eq.name,kw:eq.kw,surge:eq.surge,qty:1,periods:[{from:'06:00',to:'18:00'}],customKW:null}])},[act,sel])
   const addM=useCallback(()=>{if(mK<=0){alert('Enter W>0');return};as++;setRows(p=>[...p,{rowId:as,eqId:'__misc__',name:mN||'Misc',kw:mK/1000,surge:1,qty:1,periods:[{from:mF,to:mT}],customKW:null}])},[mK,mN,mF,mT])
   const rm=(id:number)=>setRows(p=>p.filter(r=>r.rowId!==id))
@@ -118,15 +125,11 @@ export default function AgriculturalTool(){
             </div>
             <div className="flex items-center gap-2" data-tour="ag-location">
               <span className="text-xs font-mono uppercase text-ink-faint">{t.toolsCommon.location}</span>
-              <div className="relative">
-                <select value={psh} onChange={e=>setPsh(e.target.value)} className="tool-input text-xs !pr-7 min-w-[160px] sm:min-w-[200px]">
-                  {PSH_TABLE.map(g=><optgroup key={g.group} label={g.group}>{g.options.map(o=><option key={o.id} value={o.id}>{o.label} — {o.psh} PSH</option>)}</optgroup>)}
-                </select>
-                <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none"/>
-              </div>
+              <PshSelect sel={psel} className="min-w-[160px] sm:min-w-[200px]"/>
             </div>
             <button onClick={()=>tourRef.current?.start()} title="Take the tour" className="flex items-center gap-1.5 text-[11px] font-mono uppercase text-ink-faint hover:text-brand-teal transition-colors flex-shrink-0 border border-surface-border hover:border-brand-teal/40 rounded-lg px-2.5 py-1.5"><HelpCircle size={13}/> Tutorial</button>
           </div>
+          <LocationStatus sel={psel}/>
           <div className="grid grid-cols-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-surface-border bg-white">
             <div className="p-6 flex flex-col gap-4">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Equipment schedule</h3>
@@ -170,7 +173,7 @@ export default function AgriculturalTool(){
               </details>
             </div>
             <div className="p-6 flex flex-col gap-5">
-              <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Results — {findPSH(psh).label}</h3>
+              <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Results — {psel.resolved.label}</h3>
               <LeadLock>
               <div className="bg-surface-subtle rounded-xl p-3 border border-surface-border" data-tour="ag-chart">
                 <div className="flex items-center justify-between mb-2">
@@ -189,6 +192,7 @@ export default function AgriculturalTool(){
                 <RC label="Recommended PV array" value={result?result.PpvRounded.toFixed(2):'—'} unit="kWp"/>
               </div>
               {result&&<div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-xs font-mono text-green-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
+              {result&&report.form}
               <button onClick={downloadPDF} disabled={!result||pdfBusy} data-tour="ag-pdf" className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
               </LeadLock>
               <a href="#contact" data-tour="ag-cta" className="btn-teal justify-center"><Zap size={13}/> {t.toolsCommon.requestAgDesign}</a>

@@ -7,6 +7,7 @@ import { useLang } from '@/components/LanguageProvider'
 import { LeadLock } from '@/components/AccessGate'
 import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
 import UseCaseStrip from '@/components/tools/UseCaseStrip'
+import { useReportDetails } from '@/components/tools/SiteTools'
 
 function RingGauge({ pct, color, label, value, unit }: { pct:number; color:string; label:string; value:string; unit:string }) {
   const R = 54, circ = 2 * Math.PI * R
@@ -40,10 +41,12 @@ export default function BatteryRuntimeTool() {
   const runtimePct = result.runtimeHours / 24
   const usablePct  = result.usableKWh / Math.max(capacity, 0.1)
   const [pdfBusy, setPdfBusy] = useState(false)
-  const downloadPDF = useCallback(async () => {
+  const report = useReportDetails()
+  const downloadPDF = useCallback(() => report.run(async client => {
     setPdfBusy(true)
     try {
       await generateSizingReportPDF({
+        preparedFor: client,
         toolName: 'Battery Runtime Report',
         subtitle: 'Usable energy and estimated backup runtime for the battery and load parameters entered below.',
         metrics: [
@@ -67,7 +70,7 @@ export default function BatteryRuntimeTool() {
         }],
       })
     } finally { setPdfBusy(false) }
-  }, [capacity, dod, eff, load, result])
+  }), [capacity, dod, eff, load, result, report.run])
 
   const sliders = [
     { label:'Battery capacity', unit:'kWh', val:capacity, set:setCapacity, min:1, max:100, step:0.5, color:'#2621FF' },
@@ -191,6 +194,7 @@ export default function BatteryRuntimeTool() {
                   </div>
                 ))}
               </div>
+              {report.form}
               <button onClick={downloadPDF} disabled={pdfBusy} data-tour="batt-pdf" className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
               </LeadLock>
 

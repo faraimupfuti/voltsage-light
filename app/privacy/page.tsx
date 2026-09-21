@@ -55,6 +55,15 @@ export default function PrivacyPolicyPage() {
               to your computer or phone — it is not uploaded to VoltSage or any third party. Your tool inputs are only
               shared with us if you separately choose to include them in an enquiry through our contact form.
             </p>
+            <p>
+              <strong className="text-ink">Location detection.</strong> With your permission, the sizing tools read your
+              device location in your browser to pre-select the right peak-sun-hours value. To do this, your coordinates
+              are sent to public services — BigDataCloud (or OpenStreetMap Nominatim) to name the place, and NASA POWER
+              to look up solar irradiance. If you decline, an approximate location may be looked up from your network
+              address (ipwho.is or ipapi.co). VoltSage does not store your coordinates on its servers. The name, company
+              and site location you enter for your PDF report are kept only in your browser&apos;s local storage and are
+              printed on the report on your device.
+            </p>
           </Section>
 
           <Section title="How We Use Your Information">
