@@ -1,6 +1,7 @@
 'use client'
 import { Zap, ChevronDown, Sun, Battery, BarChart3 } from 'lucide-react'
 import { useLang } from './LanguageProvider'
+import SolarFlow from './SolarFlow'
 
 export default function Hero() {
   const { t } = useLang()
@@ -54,46 +55,7 @@ export default function Hero() {
                 </span>
               </div>
 
-              <svg viewBox="0 0 460 260" className="w-full h-auto px-2 py-4" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* base wiring */}
-                <path d="M60 60 H230 V130 H400" stroke="#E4E0D5" strokeWidth="2"/>
-                <path d="M60 60 V200 H230 V130" stroke="#E4E0D5" strokeWidth="2"/>
-                <path d="M230 130 V200 H400" stroke="#E4E0D5" strokeWidth="2"/>
-                {/* live pulse tracing the same paths */}
-                <path d="M60 60 H230 V130 H400" stroke="#2621FF" strokeWidth="2.5" className="flow-line" pathLength={220}/>
-                <path d="M60 60 V200 H230 V130" stroke="#C6741E" strokeWidth="2.5" className="flow-line" pathLength={220} style={{animationDelay:'.6s'}}/>
-
-                {/* Sun */}
-                <g className="node-glow" style={{color:'#E89A4A'}}>
-                  <circle cx="60" cy="60" r="20" fill="#FFF7EC" stroke="#E89A4A" strokeWidth="1.5"/>
-                  <circle cx="60" cy="60" r="7" fill="#E89A4A"/>
-                </g>
-                <text x="60" y="94" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono, monospace" fill="#8B93A3">PV ARRAY</text>
-                <text x="60" y="106" textAnchor="middle" fontSize="10" fontWeight="700" fontFamily="JetBrains Mono, monospace" fill="#0B1220">4.0 kWp</text>
-
-                {/* Charge controller */}
-                <rect x="212" y="112" width="36" height="36" rx="6" fill="#F1EEE6" stroke="#CFC9B8"/>
-                <text x="230" y="164" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono, monospace" fill="#8B93A3">CONTROLLER</text>
-
-                {/* Battery */}
-                <g className="node-glow" style={{color:'#2621FF'}}>
-                  <rect x="14" y="184" width="46" height="32" rx="5" fill="#EEEDFF" stroke="#2621FF" strokeWidth="1.5"/>
-                </g>
-                <text x="37" y="230" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono, monospace" fill="#8B93A3">BATTERY</text>
-                <text x="37" y="242" textAnchor="middle" fontSize="10" fontWeight="700" fontFamily="JetBrains Mono, monospace" fill="#0B1220">5.0 kWh</text>
-
-                {/* Inverter */}
-                <rect x="207" y="184" width="46" height="32" rx="5" fill="#F1EEE6" stroke="#CFC9B8"/>
-                <text x="230" y="230" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono, monospace" fill="#8B93A3">INVERTER</text>
-                <text x="230" y="242" textAnchor="middle" fontSize="10" fontWeight="700" fontFamily="JetBrains Mono, monospace" fill="#0B1220">5.0 kW</text>
-
-                {/* Home / load */}
-                <g className="node-glow" style={{color:'#C6741E'}}>
-                  <rect x="378" y="112" width="44" height="36" rx="6" fill="#FFF3E7" stroke="#C6741E" strokeWidth="1.5"/>
-                </g>
-                <text x="400" y="164" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono, monospace" fill="#8B93A3">HOME LOAD</text>
-                <text x="400" y="176" textAnchor="middle" fontSize="10" fontWeight="700" fontFamily="JetBrains Mono, monospace" fill="#0B1220">2.8 kW pk</text>
-              </svg>
+              <SolarFlow className="w-full h-auto px-4 py-4"/>
 
               <div className="border-t border-surface-border px-6 py-4 flex items-center justify-between">
                 <div>
