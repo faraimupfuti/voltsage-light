@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
           <Section title="Information We Collect">
             <p>We collect different information depending on how you use the site:</p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong className="text-ink">To unlock the premium sizing tools</strong> — your full name, country, and email address.</li>
+              <li><strong className="text-ink">To create your VoltSage account and unlock the premium sizing tools</strong> — your full name, country, email address and a password (stored securely as a hash by our authentication provider, Supabase), or your name and email if you choose “Continue with Google”. Signed-in sessions use essential cookies.</li>
               <li><strong className="text-ink">If you submit an enquiry</strong> through our contact form — your name, a contact detail (phone number or email, whichever you provide), the service you're asking about, your location, and your message.</li>
               <li><strong className="text-ink">The details you enter into the sizing tools</strong> — the appliances or farm equipment you add, their power ratings, quantities, and operating schedules, plus your selected location. This is used to calculate your results and is described further under "How Your Tool Data Is Handled" below.</li>
               <li><strong className="text-ink">Technical and usage information</strong> — general analytics such as pages visited and browser type, collected through a privacy-focused analytics service (see "Cookies &amp; Analytics" below).</li>
