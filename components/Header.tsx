@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
 import { useLang } from './LanguageProvider'
 import LanguageSwitcher from './LanguageSwitcher'
-import AccountMenu, { MobileAccount } from './AccountMenu'
 
 export default function Header() {
   const { t } = useLang()
@@ -33,7 +32,6 @@ export default function Header() {
         </nav>
         <div className="hidden lg:flex items-center gap-4">
           <LanguageSwitcher/>
-          <AccountMenu/>
         </div>
         <div className="lg:hidden flex items-center gap-1">
           <LanguageSwitcher compact/>
@@ -44,7 +42,6 @@ export default function Header() {
       </div>
       <div className={`lg:hidden bg-white border-b border-surface-border overflow-hidden transition-all duration-300 ${open?'max-h-[34rem] opacity-100':'max-h-0 opacity-0'}`}>
         <div className="px-4 py-4 flex flex-col gap-1">
-          <MobileAccount onNavigate={()=>setOpen(false)}/>
           {NAV.map(n=><a key={n.href} href={n.href} onClick={()=>setOpen(false)} className="py-3 px-3 text-sm font-mono uppercase tracking-wider text-ink-muted hover:text-brand-orange hover:bg-surface-subtle rounded-xl transition-all">{n.label}</a>)}
           <a href="/#sizing" onClick={()=>setOpen(false)} className="mt-2 btn-primary justify-center">{t.nav.ctaMobile}</a>
         </div>

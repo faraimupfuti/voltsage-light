@@ -3,7 +3,6 @@ import{useState,useCallback,useEffect,useRef}from'react'
 import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2,HelpCircle}from'lucide-react'
 import{APPLIANCE_CATALOG,ApplianceRow,calculateResidentialSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
-import{LeadLock}from'@/components/AccessGate'
 import{useLang}from'@/components/LanguageProvider'
 import TourGuide,{TourHandle,TourStep}from'@/components/TourGuide'
 import UseCaseStrip from'@/components/tools/UseCaseStrip'
@@ -177,7 +176,6 @@ export default function ResidentialTool(){
             </div>
             <div className="p-6 flex flex-col gap-5">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Results — {sel.resolved.label}</h3>
-              <LeadLock>
               <div className="bg-surface-subtle rounded-xl p-3 border border-surface-border" data-tour="res-chart">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono text-ink-faint uppercase">24-hour load profile</span>
@@ -198,7 +196,6 @@ export default function ResidentialTool(){
               {result&&(()=>{const t=result.Ed_kWh,e=Object.entries(result.catTotalsWh);if(!t||!e.length)return null;return(<div><Lbl c="Energy breakdown"/><div className="h-3 rounded-full overflow-hidden flex bg-surface-border">{e.map(([c,w])=><div key={c} style={{width:`${(w/1000/t)*100}%`,background:CC[c]??'#64748b'}} title={`${c}: ${(w/1000).toFixed(2)} kWh`} className="h-full"/>)}</div><div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">{e.map(([c,w])=><span key={c} className="flex items-center gap-1 text-[9px] font-mono text-ink-faint"><span className="w-2 h-2 rounded-sm" style={{background:CC[c]}}/>{c} {(w/1000).toFixed(1)} kWh</span>)}</div></div>)})()}
               {result&&report.form}
               <button onClick={downloadPDF} disabled={!result||pdfBusy} data-tour="res-pdf" className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
-              </LeadLock>
               <a href="#contact" data-tour="res-cta" className="btn-primary justify-center"><Zap size={13}/> {t.toolsCommon.requestDesign}</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Final system sizing and equipment selection should be reviewed and verified by a qualified Engineer or Solar Design Professional before installation.</p>
             </div>

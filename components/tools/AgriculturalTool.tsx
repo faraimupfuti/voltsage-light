@@ -3,7 +3,6 @@ import{useState,useCallback,useEffect,useRef}from'react'
 import{Plus,Trash2,Zap,Clock,X,ChevronDown,FileDown,Loader2,HelpCircle}from'lucide-react'
 import{AG_ACTIVITIES,AgActivity,AgEquipmentRow,calculateAgriculturalSizing,SizingResult}from'@/lib/calculations'
 import{generateSizingReportPDF}from'@/lib/pdfReport'
-import{LeadLock}from'@/components/AccessGate'
 import{useLang}from'@/components/LanguageProvider'
 import TourGuide,{TourHandle,TourStep}from'@/components/TourGuide'
 import UseCaseStrip from'@/components/tools/UseCaseStrip'
@@ -174,7 +173,6 @@ export default function AgriculturalTool(){
             </div>
             <div className="p-6 flex flex-col gap-5">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint">Results — {psel.resolved.label}</h3>
-              <LeadLock>
               <div className="bg-surface-subtle rounded-xl p-3 border border-surface-border" data-tour="ag-chart">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono text-ink-faint uppercase">24-hour load profile</span>
@@ -194,7 +192,6 @@ export default function AgriculturalTool(){
               {result&&<div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-xs font-mono text-green-700">≈ {result.panelCount} panels @ 550 Wp · Night {result.Enight_kWh.toFixed(2)} kWh · Day {result.Eday_kWh.toFixed(2)} kWh</div>}
               {result&&report.form}
               <button onClick={downloadPDF} disabled={!result||pdfBusy} data-tour="ag-pdf" className="btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
-              </LeadLock>
               <a href="#contact" data-tour="ag-cta" className="btn-teal justify-center"><Zap size={13}/> {t.toolsCommon.requestAgDesign}</a>
               <p className="text-[10px] font-mono text-ink-faint leading-relaxed">Inverter sized at 1.3× peak running demand to nearest standard size. Final design must be verified by a qualified engineer before installation.</p>
             </div>

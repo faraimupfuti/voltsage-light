@@ -4,7 +4,6 @@ import { Battery, BatteryFull, Clock, Zap, FileDown, Loader2, HelpCircle } from 
 import { calculateBatteryRuntime } from '@/lib/calculations'
 import { generateSizingReportPDF } from '@/lib/pdfReport'
 import { useLang } from '@/components/LanguageProvider'
-import { LeadLock } from '@/components/AccessGate'
 import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
 import UseCaseStrip from '@/components/tools/UseCaseStrip'
 import { useReportDetails } from '@/components/tools/SiteTools'
@@ -161,7 +160,6 @@ export default function BatteryRuntimeTool() {
             <div className="p-5 sm:p-8 flex flex-col items-center justify-center">
               <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-8 self-start">Results</h3>
 
-              <LeadLock>
               <div className="flex flex-wrap justify-center gap-10 mb-10" data-tour="batt-gauges">
                 <RingGauge pct={runtimePct} color="#2621FF" label="Runtime at this load" value={result.runtimeHours >= 24 ? '24+' : result.runtimeHours.toFixed(1)} unit="hours" />
                 <RingGauge pct={usablePct}  color="#0B1220" label="Usable energy"        value={result.usableKWh.toFixed(2)} unit="kWh" />
@@ -196,7 +194,6 @@ export default function BatteryRuntimeTool() {
               </div>
               {report.form}
               <button onClick={downloadPDF} disabled={pdfBusy} data-tour="batt-pdf" className="w-full btn-teal justify-center disabled:opacity-40 disabled:cursor-not-allowed">{pdfBusy?<Loader2 size={13} className="animate-spin"/>:<FileDown size={13}/>} {t.toolsCommon.downloadPdf}</button>
-              </LeadLock>
 
               <a href="#contact" data-tour="batt-cta" className="mt-6 btn-primary w-full justify-center"><Zap size={13}/> {t.toolsCommon.requestBattery}</a>
             </div>

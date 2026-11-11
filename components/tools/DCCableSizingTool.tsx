@@ -12,7 +12,6 @@ import {
   NO_CABLE_SATISFIES_MESSAGE, ASSUMED_CABLE_TYPE,
 } from '@/lib/dcCableSizing'
 import { generateSizingReportPDF } from '@/lib/pdfReport'
-import { LeadLock } from '@/components/AccessGate'
 import TourGuide, { TourHandle, TourStep } from '@/components/TourGuide'
 import UseCaseStrip from '@/components/tools/UseCaseStrip'
 import { useReportDetails } from '@/components/tools/SiteTools'
@@ -346,7 +345,6 @@ export default function DCCableSizingTool() {
               {/* RIGHT — results */}
               <div className="p-5 sm:p-8" data-tour="dc-results">
                 <h3 className="font-mono text-xs uppercase tracking-widest text-ink-faint mb-6">Results</h3>
-                <LeadLock>
                   {rec ? (
                     <div className="space-y-4">
                       <div className="rounded-xl border border-brand-teal/30 bg-brand-teal/5 p-4">
@@ -412,7 +410,6 @@ export default function DCCableSizingTool() {
                       </div>
                     </div>
                   )}
-                </LeadLock>
 
                 <a href="#contact" className="mt-6 btn-primary w-full justify-center"><Zap size={13} /> Request an engineer&apos;s review</a>
               </div>

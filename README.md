@@ -67,7 +67,3 @@ git push heroku main
 - `components/tools/SiteTools.tsx` — `usePshSelection`, `PshSelect`, `LocationStatus`, `useReportDetails` used by every sizing tool.
 - Geolocation requires HTTPS (or localhost).
 
-## Accounts (Supabase Auth)
-- Email + password and Google sign-in via Supabase. Code: `components/AccessGate.tsx` (provider, modal, `LeadLock`), `components/AccountMenu.tsx` (header), `app/account/page.tsx`, `app/auth/callback/route.ts`, `lib/supabase/*`, strings in `lib/i18n/auth.ts`.
-- Setup: run `supabase/migrations/001_profiles.sql` (SQL editor, or `supabase link` + `supabase db push`). In Supabase → Authentication → URL Configuration set Site URL `https://voltsage.co` and add redirect URLs `https://voltsage.co/**` and `http://localhost:3000/**`. Enable the Google provider if you want Google sign-in.
-- Env: see `.env.example`. Only the publishable key belongs in this app — never the service-role key or database password.
