@@ -1,5 +1,6 @@
 'use client'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react'
+import { useAccess } from '@/components/AccessGate'
 import {
   DetectedSite, GeoFailure, getBrowserPosition, locateByNetwork, resolveSite, loadCachedSite, saveCachedSite,
 } from '@/lib/geoPsh'
@@ -28,6 +29,7 @@ export const useSite = () => useContext(Ctx)
 const DETAILS_KEY = 'voltsage_report_details'
 
 export function SiteProvider({ children }: { children: ReactNode }) {
+  const { lead } = useAccess()
   const [geo, setGeo] = useState<GeoState>({ status: 'idle', site: null, reason: null })
   const [details, setDetailsState] = useState<ReportDetails>({ name: '', company: '', location: '' })
   const startedRef = useRef(false)
@@ -58,7 +60,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     setDetailsState(prev => { const next = { ...prev, ...patch }; persist(next); return next })
   }, [persist])
 
-  // ---- prefill: location from the detected place ----
+  // ---- prefill: name from the sign-up lead, location from the detected place ----
+  useEffect(() => {
+    if (lead?.name) setDetailsState(prev => (prev.name ? prev : { ...prev, name: lead.name.slice(0, 80) }))
+  }, [lead?.name])
+
   useEffect(() => {
     const place = geo.site?.place
     if (place && !locEditedRef.current) setDetailsState(prev => (prev.location === place ? prev : { ...prev, location: place.slice(0, 120) }))

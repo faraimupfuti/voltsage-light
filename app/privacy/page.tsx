@@ -37,6 +37,7 @@ export default function PrivacyPolicyPage() {
           <Section title="Information We Collect">
             <p>We collect different information depending on how you use the site:</p>
             <ul className="list-disc pl-5 space-y-1.5">
+              <li><strong className="text-ink">To unlock the premium sizing tools</strong> — your full name, country, and email address.</li>
               <li><strong className="text-ink">If you submit an enquiry</strong> through our contact form — your name, a contact detail (phone number or email, whichever you provide), the service you're asking about, your location, and your message.</li>
               <li><strong className="text-ink">The details you enter into the sizing tools</strong> — the appliances or farm equipment you add, their power ratings, quantities, and operating schedules, plus your selected location. This is used to calculate your results and is described further under "How Your Tool Data Is Handled" below.</li>
               <li><strong className="text-ink">Technical and usage information</strong> — general analytics such as pages visited and browser type, collected through a privacy-focused analytics service (see "Cookies &amp; Analytics" below).</li>
@@ -67,7 +68,7 @@ export default function PrivacyPolicyPage() {
 
           <Section title="How We Use Your Information">
             <ul className="list-disc pl-5 space-y-1.5">
-              <li>To provide our premium solar sizing and energy assessment tools</li>
+              <li>To unlock and provide access to our premium solar sizing and energy assessment tools</li>
               <li>To respond to enquiries and support requests submitted through our contact form</li>
               <li>To follow up about your solar sizing results, where you've asked us to</li>
               <li>To understand general usage trends and improve our tools and website</li>
@@ -78,8 +79,8 @@ export default function PrivacyPolicyPage() {
           <Section title="Information Sharing">
             <p>VoltSage does not sell your personal information, and we do not earn a commission on any equipment you buy.</p>
             <p>
-              When you submit an enquiry, that information is automatically forwarded to
-              our internal systems through Make.com, a workflow automation service we use to manage
+              When you sign up to use the tools or submit an enquiry, that information is automatically forwarded to
+              our internal systems through Make.com, a workflow automation service we use to manage signups and
               enquiries. Make.com processes this data on our behalf and does not use it for its own purposes.
             </p>
             <p>We may also disclose information where required by applicable law.</p>
@@ -116,7 +117,7 @@ export default function PrivacyPolicyPage() {
           <Section title="Third-Party Services">
             <p>VoltSage relies on a small number of third-party services to operate the website and process the information above:</p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong className="text-ink">Make.com</strong> — processes enquiry form submissions</li>
+              <li><strong className="text-ink">Make.com</strong> — processes signup and enquiry form submissions</li>
               <li><strong className="text-ink">Umami</strong> — privacy-focused website analytics</li>
               <li>Our cloud hosting provider, which serves the website itself</li>
             </ul>

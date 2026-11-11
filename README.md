@@ -66,4 +66,3 @@ git push heroku main
 - `components/SiteProvider.tsx` — shared detection state + the name / company / site-location captured for PDF reports (stored in the browser only).
 - `components/tools/SiteTools.tsx` — `usePshSelection`, `PshSelect`, `LocationStatus`, `useReportDetails` used by every sizing tool.
 - Geolocation requires HTTPS (or localhost).
-

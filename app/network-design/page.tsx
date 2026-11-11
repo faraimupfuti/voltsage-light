@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import Header from '@/components/Header'
 import { Footer } from '@/components/ContactAndFooter'
 import Reveal from '@/components/Reveal'
+import { LeadLock } from '@/components/AccessGate'
 import {
   NetworkLoadRow, calculateNetworkLoadProfile,
   SiteSupplyOption, SITE_SUPPLY_OPTIONS, SitePhase,
@@ -370,6 +371,7 @@ export default function NetworkDesignPage(){
                 )}
 
                 {step===4 && (
+                  <LeadLock>
                   <div>
                     <h2 className="font-disp font-bold text-lg text-ink mb-1">System Design</h2>
                     <p className="text-sm text-ink-muted mb-6">Each selected goal produces its own independent design scenario — adjustments are not combined.</p>
@@ -626,6 +628,7 @@ export default function NetworkDesignPage(){
                     <a href="/#contact" className="btn-primary justify-center"><Zap size={13}/> Request this design from an engineer</a>
                     <p className="text-[10px] font-mono text-ink-faint leading-relaxed mt-4">This is a preliminary design based on a generic equipment database. Final equipment selection, cable sizing, protection and earthing must be completed and verified by a qualified Electrical Engineer before installation.</p>
                   </div>
+                  </LeadLock>
                 )}
               </div>
 
